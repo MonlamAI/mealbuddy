@@ -1,2 +1,6 @@
+packages:
+  - backend
+  - frontend
+
 publicHoistPattern:
   - '@inertiajs/core'
