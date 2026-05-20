@@ -42,7 +42,12 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function validTestPassword(): string
 {
-    // ..
+    return 'mealbuddy-Z9k#qL2x';
+}
+
+function anotherValidTestPassword(): string
+{
+    return 'mealbuddy-N3w#qL2x';
 }
