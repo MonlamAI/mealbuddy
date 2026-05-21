@@ -85,26 +85,38 @@ class LunchController extends Controller
     public function userStats(Request $request)
     {
         $userId = $request->user()->id;
+        $userCreatedAt = Carbon::parse($request->user()->created_at)->startOfDay();
+        $userRegisterDate = $userCreatedAt->toDateString();
         $currentMonth = Carbon::now()->month;
         $currentYear = Carbon::now()->year;
 
-        $totalLunchEaten = LunchOrder::where('user_id', $userId)
-            ->where('status', 'opted_in')
+        // Count of explicitly opted_out orders ever
+        $totalSkipped = LunchOrder::where('user_id', $userId)
+            ->where('status', 'opted_out')
             ->count();
 
-        $joinedThisMonth = LunchOrder::where('user_id', $userId)
-            ->where('status', 'opted_in')
-            ->join('lunch_days', 'lunch_orders.lunch_day_id', '=', 'lunch_days.id')
-            ->whereMonth('lunch_days.lunch_date', $currentMonth)
-            ->whereYear('lunch_days.lunch_date', $currentYear)
-            ->count();
+        // Total lunch days ever on or after registration date
+        $totalLunchDays = LunchDay::where('lunch_date', '>=', $userRegisterDate)->count();
 
+        // Default 'Yes': joined = total days - skipped days
+        $totalLunchEaten = max(0, $totalLunchDays - $totalSkipped);
+
+        // Count of explicitly opted_out orders this month
         $skippedThisMonth = LunchOrder::where('user_id', $userId)
             ->where('status', 'opted_out')
             ->join('lunch_days', 'lunch_orders.lunch_day_id', '=', 'lunch_days.id')
             ->whereMonth('lunch_days.lunch_date', $currentMonth)
             ->whereYear('lunch_days.lunch_date', $currentYear)
             ->count();
+
+        // Total lunch days this month on or after registration date
+        $lunchDaysThisMonth = LunchDay::whereMonth('lunch_date', $currentMonth)
+            ->whereYear('lunch_date', $currentYear)
+            ->where('lunch_date', '>=', $userRegisterDate)
+            ->count();
+
+        // Default 'Yes' for this month
+        $joinedThisMonth = max(0, $lunchDaysThisMonth - $skippedThisMonth);
 
         return response()->json([
             'totalLunchEaten' => $totalLunchEaten,
@@ -142,7 +154,7 @@ class LunchController extends Controller
         return response()->json([
             'lunch_day_id' => $lunchDay->id,
             'menu' => $menu,
-            'status' => $order ? $order->status : null,
+            'status' => $order ? $order->status : 'opted_in', // default to opted_in
             'is_deadline_met' => Carbon::now()->hour >= 16
         ]);
     }
@@ -176,7 +188,7 @@ class LunchController extends Controller
         }
 
         // Get employees
-        $employees = User::where('role', 'employee')->where('is_active', true)->get();
+        $employees = User::whereIn('role', ['employee', 'chef', 'accountant'])->where('is_active', true)->get();
         $totalEmployees = $employees->count();
 
         // Calculate today's stats and participation details
@@ -188,7 +200,7 @@ class LunchController extends Controller
             $orders = LunchOrder::where('lunch_day_id', $lunchDay->id)->get()->keyBy('user_id');
             foreach ($employees as $emp) {
                 $order = $orders->get($emp->id);
-                $status = 'no_response';
+                $status = 'joining'; // default to joining
                 $votedAt = '--:--';
                 
                 if ($order) {
@@ -200,6 +212,8 @@ class LunchController extends Controller
                         $skipped++;
                     }
                     $votedAt = $order->updated_at->format('g:i A');
+                } else {
+                    $joined++;
                 }
                 
                 $employeeDetails[] = [
@@ -216,14 +230,17 @@ class LunchController extends Controller
                     'id' => $emp->id,
                     'name' => $emp->name,
                     'department' => $emp->department ?? 'General',
-                    'status' => 'no_response',
+                    'status' => 'joining', // default to joining
                     'votedAt' => '--:--'
                 ];
+                $joined++;
             }
         }
 
         // Weekly joining (last 5 days)
         $chartData = [];
+        $totalEmployeesCount = User::whereIn('role', ['employee', 'chef', 'accountant'])->where('is_active', true)->count();
+        
         for ($i = 4; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
             $dayName = $date->format('D'); // Mon, Tue
@@ -231,7 +248,11 @@ class LunchController extends Controller
             $dayRecord = LunchDay::where('lunch_date', $date->format('Y-m-d'))->first();
             $count = 0;
             if ($dayRecord) {
-                $count = LunchOrder::where('lunch_day_id', $dayRecord->id)->where('status', 'opted_in')->count();
+                $optedOutCount = LunchOrder::where('lunch_day_id', $dayRecord->id)->where('status', 'opted_out')->count();
+                $count = max(0, $totalEmployeesCount - $optedOutCount);
+            } else {
+                // If the day has no record, everyone is counted as opted_in by default
+                $count = $totalEmployeesCount;
             }
             
             $chartData[] = [
