@@ -17,6 +17,8 @@ import {
   CheckCheck
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useLanguage, LanguageSwitcher, toTibetanDigits, getDishDescriptionKey } from '@/components/providers/language-provider';
+import Header from '@/components/header';
 
 // Mock Data - In production, this would come from a `useQuery` hook
 const DAILY_MENU = {
@@ -29,6 +31,7 @@ const DAILY_MENU = {
 
 export default function LunchVotePage() {
   const router = useRouter();
+  const { t, language } = useLanguage();
   const [attendance, setAttendance] = useState<"yes" | "no" | null>(null);
   const [isDeadlineMet, setIsDeadlineMet] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
@@ -36,8 +39,6 @@ export default function LunchVotePage() {
   const [todayMeal, setTodayMeal] = useState<{title: string, image: string} | null>(null);
   const [lunchDayId, setLunchDayId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [broadcasts, setBroadcasts] = useState<any[]>([]);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Countdown Logic
   useEffect(() => {
@@ -91,25 +92,8 @@ export default function LunchVotePage() {
     };
     fetchTodayPoll();
 
-    const fetchBroadcasts = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/broadcasts`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setBroadcasts(Array.isArray(data) ? data : []);
-        }
-      } catch (e) {}
-    };
-    fetchBroadcasts();
-    const bInterval = setInterval(fetchBroadcasts, 60000);
-
     return () => {
       clearInterval(timer);
-      clearInterval(bInterval);
     };
   }, []);
 
@@ -129,30 +113,6 @@ export default function LunchVotePage() {
       }
     }
   }, [router]);
-
-  const unreadCount = broadcasts.filter(b => !b.is_read).length;
-
-  const handleMarkAsRead = async (e: React.MouseEvent, id: number) => {
-      e.stopPropagation();
-      try {
-          const token = localStorage.getItem('token');
-          setBroadcasts(prev => prev.map(b => b.id === id ? { ...b, is_read: true } : b));
-          
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/broadcasts/${id}/read`, {
-              method: 'POST',
-              headers: { 'Authorization': `Bearer ${token}` }
-          });
-      } catch (err) {
-          console.error("Failed to mark as read", err);
-      }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    router.push('/');
-  };
 
   const submitVote = async (choice: "yes" | "no") => {
     if (isDeadlineMet || !lunchDayId || isSubmitting) return;
@@ -190,129 +150,29 @@ export default function LunchVotePage() {
   return (
     <div className="min-h-screen bg-[#F9FAFB] font-sans text-[#1F2A44] selection:bg-[#2E5A88]/10">
 
-      {/* Top Navigation Bar */}
-      <nav className="h-20 bg-white border-b border-gray-100 px-6 lg:px-12 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
-          <div className="bg-[#2E5A88] p-2 rounded-lg text-white">
-            <CalendarDays size={20} />
-          </div>
-          <span className="text-xl font-bold tracking-tight">MealBuddy</span>
-        </div>
-        
-        <div className="flex items-center gap-8">
-          <div className="hidden md:flex flex-col items-end">
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Voting Deadline</span>
-            <span className={`text-sm font-bold ${isDeadlineMet ? 'text-red-500' : 'text-[#2E5A88]'}`}>
-              {isDeadlineMet ? "Closed" : timeLeft}
-            </span>
-          </div>
+      <Header user={user} onLogout={() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUser(null);
+        router.push('/');
+      }} />
 
-          <div className="flex items-center gap-6">
-            <div className="relative">
-              <button 
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-colors relative"
-              >
-                <Bell size={20} />
-                {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-                )}
-              </button>
-
-              <AnimatePresence>
-                  {isDropdownOpen && (
-                      <motion.div 
-                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                          className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden z-50"
-                      >
-                          <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                              <h3 className="font-bold text-gray-800 text-sm">Notifications</h3>
-                              {unreadCount > 0 && (
-                                  <span className="text-xs font-semibold bg-[#2E5A88]/10 text-[#2E5A88] px-2 py-1 rounded-lg">{unreadCount} New</span>
-                              )}
-                          </div>
-                          <div className="max-h-80 overflow-y-auto p-2 text-left">
-                              {broadcasts.length > 0 ? broadcasts.map((b) => (
-                                  <div key={b.id} className={`p-3 rounded-xl transition-colors mb-1 ${b.is_read ? 'opacity-70 hover:bg-gray-50' : 'bg-gray-100 hover:bg-gray-200'}`}>
-                                      <div className="flex gap-3">
-                                          <div className="w-8 h-8 rounded-full bg-[#2E5A88]/10 text-[#2E5A88] flex items-center justify-center shrink-0 mt-1">
-                                              <ChefHat size={16} />
-                                          </div>
-                                          <div className="flex-1">
-                                              <p className="text-sm text-gray-800 font-medium leading-snug">{b.message}</p>
-                                              <p className="text-[10px] text-gray-400 mt-1">
-                                                  {new Date(b.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • Chef {b.user?.name?.split(' ')[0] || 'Andre'}
-                                              </p>
-                                          </div>
-                                          {!b.is_read && (
-                                              <button 
-                                                  onClick={(e) => handleMarkAsRead(e, b.id)}
-                                                  className="text-gray-400 hover:text-[#2E5A88] transition-colors shrink-0" 
-                                                  title="Mark as read"
-                                              >
-                                                  <CheckCheck size={18} />
-                                              </button>
-                                          )}
-                                      </div>
-                                  </div>
-                              )) : (
-                                  <div className="p-6 text-center text-gray-500 text-sm">
-                                      No recent notifications
-                                  </div>
-                              )}
-                          </div>
-                      </motion.div>
-                  )}
-              </AnimatePresence>
-            </div>
-
-            {user ? (
-              <div className="flex items-center gap-4">
-                <div 
-                  className="flex items-center gap-2 text-[#1F2A44] font-medium cursor-pointer hover:text-[#2E5A88] transition-colors"
-                  onClick={() => {
-                    if (user?.role === 'chef') {
-                      router.push('/dashboard');
-                    } else {
-                      router.push('/user_dashboard');
-                    }
-                  }}
-                >
-                  <div className="w-10 h-10 bg-[#2E5A88]/10 rounded-full flex items-center justify-center text-[#2E5A88] border-2 border-white shadow-sm">
-                    <User size={18} />
-                  </div>
-                  <span className="hidden sm:inline">{user.name}</span>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="text-gray-400 hover:text-red-500 transition-colors"
-                  title="Logout"
-                >
-                  <LogOut size={20} />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => router.push('/login')}
-                className="flex items-center gap-2 bg-[#2E5A88] text-white px-5 py-2.5 rounded-full hover:bg-[#1F2A44] transition-colors font-bold text-sm"
-              >
-                <User size={16} /> Sign In
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-5xl mx-auto py-12 px-6">
+      <main className="max-w-5xl mx-auto pt-32 pb-12 px-6">
 
         {/* Header Section */}
-        <div className="mb-12 text-center md:text-left">
-          <h1 className="text-4xl font-extrabold tracking-tight mb-3">Lunch at work</h1>
-          <p className="text-lg text-gray-500 font-medium">
-            Confirm your attendance for <span className="text-gray-900">{DAILY_MENU.date}</span>
-          </p>
+        <div className="mb-12 text-center md:text-left flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div>
+            <h1 className="text-4xl font-extrabold tracking-tight mb-3">{t('lunch_at_work')}</h1>
+            <p className="text-lg text-gray-500 font-medium">
+              {t('confirm_attendance_for')} <span className="text-gray-900">{t('fallback_menu_date')}</span>
+            </p>
+          </div>
+          <div className="bg-white border border-gray-100 rounded-2xl px-6 py-4 shadow-sm flex flex-col items-center md:items-end w-fit mx-auto md:mx-0">
+            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{t('voting_deadline')}</span>
+            <span className={`text-xl font-black ${isDeadlineMet ? 'text-red-500' : 'text-[#2E5A88]'}`}>
+              {isDeadlineMet ? t('closed') : (language === 'bo' ? toTibetanDigits(timeLeft) : timeLeft)}
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -327,20 +187,20 @@ export default function LunchVotePage() {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-sm border border-white/50">
-                  <span className="text-xs font-bold text-[#2E5A88] uppercase tracking-widest">Today&apos;s Special</span>
+                  <span className="text-xs font-bold text-[#2E5A88] uppercase tracking-widest">{t('todays_special')}</span>
                 </div>
               </div>
 
               <div className="p-10">
-                <h2 className="text-3xl font-bold mb-4">{todayMeal?.title || DAILY_MENU.dishName}</h2>
+                <h2 className="text-3xl font-bold mb-4">{t(todayMeal?.title || DAILY_MENU.dishName)}</h2>
                 <p className="text-gray-500 leading-relaxed text-lg mb-8">
-                  {DAILY_MENU.description}
+                  {t(getDishDescriptionKey(todayMeal?.title || DAILY_MENU.dishName))}
                 </p>
 
                 <div className="flex items-start gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-100">
                   <Info className="text-gray-400 shrink-0 mt-0.5" size={20} />
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    Meal includes steamed rice, cucumber raita, and seasonal dessert. All ingredients are locally sourced.
+                    {t('meal_details_info')}
                   </p>
                 </div>
               </div>
@@ -350,7 +210,7 @@ export default function LunchVotePage() {
           {/* Voting Side Panel */}
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm sticky top-32">
-              <h3 className="text-xl font-bold mb-6">Will you join us?</h3>
+              <h3 className="text-xl font-bold mb-6">{t('will_you_join')}</h3>
 
               <div className="space-y-4">
                 <button
@@ -365,7 +225,7 @@ export default function LunchVotePage() {
                     <div className={`p-2 rounded-lg transition-colors ${attendance === 'yes' ? 'bg-[#2E5A88] text-white' : 'bg-gray-100 text-gray-400'}`}>
                       <Check size={20} />
                     </div>
-                    <span className="text-lg font-bold">Yes, I&apos;ll be there</span>
+                    <span className="text-lg font-bold">{t('vote_yes')}</span>
                   </div>
                   {attendance === "yes" && (
                     <motion.div layoutId="check" className="text-[#2E5A88]">
@@ -386,7 +246,7 @@ export default function LunchVotePage() {
                     <div className={`p-2 rounded-lg transition-colors ${attendance === 'no' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
                       <X size={20} />
                     </div>
-                    <span className="text-lg font-bold">No, skip today</span>
+                    <span className="text-lg font-bold">{t('vote_no')}</span>
                   </div>
                 </button>
               </div>
@@ -395,11 +255,11 @@ export default function LunchVotePage() {
               <div className="mt-10 pt-8 border-t border-gray-50 flex flex-col items-center gap-4">
                 {isDeadlineMet ? (
                   <div className="bg-red-50 text-red-600 px-6 py-3 rounded-full flex items-center gap-2 text-sm font-bold animate-pulse">
-                    <Clock size={16} /> Voting is now locked
+                    <Clock size={16} /> {t('voting_locked')}
                   </div>
                 ) : (
                   <p className="text-xs text-gray-400 font-bold uppercase tracking-widest text-center">
-                    Response required by 4:00 PM
+                    {t('response_cutoff')}
                   </p>
                 )}
 
@@ -410,7 +270,7 @@ export default function LunchVotePage() {
                       animate={{ opacity: 1, y: 0 }}
                       className="text-[#2E5A88] text-sm font-bold flex items-center gap-2"
                     >
-                      <Check size={16} /> Vote recorded successfully
+                      <Check size={16} /> {t('vote_recorded')}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -420,10 +280,10 @@ export default function LunchVotePage() {
             {/* Quick Stats Mini-Card */}
             <div className="bg-[#1F2A44] rounded-[2rem] p-8 text-white relative overflow-hidden">
               <div className="relative z-10">
-                <p className="text-blue-200/60 text-xs font-black uppercase tracking-widest mb-2">Team Participation</p>
+                <p className="text-blue-200/60 text-xs font-black uppercase tracking-widest mb-2">{t('team_participation')}</p>
                 <div className="flex items-end gap-2">
-                  <span className="text-4xl font-bold">84%</span>
-                  <span className="text-blue-300/50 text-sm mb-1 font-bold">joined so far</span>
+                  <span className="text-4xl font-bold">{language === 'bo' ? toTibetanDigits('84%') : '84%'}</span>
+                  <span className="text-blue-300/50 text-sm mb-1 font-bold">{t('joined_so_far')}</span>
                 </div>
               </div>
               <div className="absolute top-[-20%] right-[-10%] w-32 h-32 bg-blue-500/20 rounded-full blur-2xl" />

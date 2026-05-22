@@ -12,9 +12,11 @@ import {
   Eye, EyeOff, AlertCircle, ChefHat, Users
 } from "lucide-react";
 import { api, getCsrfCookie } from "@/lib/api";
+import { useLanguage, LanguageSwitcher } from "@/components/providers/language-provider";
 
 export default function AuthPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
 
@@ -105,7 +107,7 @@ export default function AuthPage() {
           <div className="bg-white p-2.5 rounded-2xl text-[#2E5A88] shadow-2xl group-hover:scale-110 transition-transform duration-300">
             <Utensils size={30} strokeWidth={2.5} />
           </div>
-          <span className="text-2xl font-black tracking-tighter uppercase">MealBuddy</span>
+          <span className="text-2xl font-black tracking-tighter uppercase">{t('app_title')}</span>
         </motion.div>
 
         {/* Hero Text & Glass Card */}
@@ -153,6 +155,11 @@ export default function AuthPage() {
 
       {/* --- RIGHT SIDE: AUTHENTICATION FORM --- */}
       <div className="flex-1 flex flex-col items-center justify-center p-8 lg:p-20 relative">
+        {/* Floating Language Switcher in Auth Panel */}
+        <div className="absolute top-8 right-8 z-[60]">
+          <LanguageSwitcher />
+        </div>
+
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -166,46 +173,38 @@ export default function AuthPage() {
             <div className="p-2 rounded-full group-hover:bg-[#2E5A88]/10 transition-colors">
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
             </div>
-            Back to Website
+            {t('back_to_website')}
           </button>
 
           {/* Header */}
           <div className="mb-10">
             <h1 className="text-4xl font-extrabold tracking-tight text-[#1F2A44] mb-3">
-              {activeTab === "login" ? "Welcome Back" : "Get Started"}
+              {activeTab === "login" ? t('welcome_back') : t('get_started')}
             </h1>
             <p className="text-lg text-gray-500 font-medium leading-relaxed">
               {activeTab === "login"
-                ? "Sign in to manage your team's lunch schedule."
-                : "Create an account to simplify your office dining experience."}
+                ? t('login_subtitle')
+                : t('signup_subtitle')}
             </p>
           </div>
 
-          {/* Changed className to include 'flex flex-col' 
-    to force the vertical stacking logic from your JS snippet 
-*/}
           <Tabs
             defaultValue="login"
             onValueChange={setActiveTab}
             className="w-full flex flex-col gap-6"
           >
-            {/* Updated TabsList:
-      1. Changed 'grid grid-cols-2' to 'flex flex-col' for vertical buttons
-      2. Set 'h-auto' since buttons will now stack
-      3. Added 'gap-2' for spacing between Login and Sign Up tabs
-  */}
             <TabsList className="flex flex-row w-full h-auto mb-4 bg-gray-200/40 p-2 rounded-full border border-gray-200 gap-2">
               <TabsTrigger
                 value="login"
                 className="w-full py-3 rounded-full font-bold text-base transition-all data-[state=active]:bg-white data-[state=active]:text-[#2E5A88] data-[state=active]:shadow-md"
               >
-                Login
+                {t('sign_in')}
               </TabsTrigger>
               <TabsTrigger
                 value="signup"
                 className="w-full py-3 rounded-full font-bold text-base transition-all data-[state=active]:bg-white data-[state=active]:text-[#2E5A88] data-[state=active]:shadow-md"
               >
-                Sign Up
+                {t('sign_up')}
               </TabsTrigger>
             </TabsList>
 
@@ -231,7 +230,7 @@ export default function AuthPage() {
                 {/* LOGIN FORM */}
                 <TabsContent value="login" className="space-y-6 mt-0 focus-visible:outline-none">
                   <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-[0.1em] text-gray-400 ml-1">Email Address</label>
+                    <label className="text-xs font-black uppercase tracking-[0.1em] text-gray-400 ml-1">{t('email_address')}</label>
                     <div className="relative group">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2E5A88] transition-colors" size={20} />
                       <Input
@@ -246,8 +245,8 @@ export default function AuthPage() {
 
                   <div className="space-y-2">
                     <div className="flex justify-between items-center px-1">
-                      <label className="text-xs font-black uppercase tracking-[0.1em] text-gray-400">Password</label>
-                      <button className="text-sm font-bold text-[#2E5A88] hover:underline decoration-2 underline-offset-4">Forgot Password?</button>
+                      <label className="text-xs font-black uppercase tracking-[0.1em] text-gray-400">{t('password')}</label>
+                      <button className="text-sm font-bold text-[#2E5A88] hover:underline decoration-2 underline-offset-4">{t('forgot_password')}</button>
                     </div>
                     <div className="relative group">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2E5A88] transition-colors" size={20} />
@@ -278,46 +277,14 @@ export default function AuthPage() {
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         Signing In...
                       </div>
-                    ) : "Sign In"}
+                    ) : t('sign_in')}
                   </Button>
                 </TabsContent>
 
                 {/* SIGNUP FORM */}
                 <TabsContent value="signup" className="space-y-5 mt-0 focus-visible:outline-none">
-                  {/* Role Selection */}
-                  <div className="space-y-3">
-                    <label className="text-xs font-black uppercase tracking-[0.1em] text-gray-400 ml-1">I am signing up as a...</label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, role: 'employee' }))}
-                        className={`flex flex-col items-center justify-center py-2 rounded-3xl border-2 transition-all gap-3 ${formData.role === 'employee'
-                          ? 'border-[#2E5A88] bg-[#2E5A88]/5 text-[#2E5A88] shadow-lg shadow-[#2E5A88]/10'
-                          : 'border-gray-100 hover:border-gray-200 text-gray-400'
-                          }`}
-                      >
-                        <div className={`p-3 rounded-2xl transition-colors ${formData.role === 'employee' ? 'bg-[#2E5A88] text-white' : 'bg-gray-50'}`}>
-                          <Users size={24} />
-                        </div>
-                        <span className="font-bold text-sm">Employee</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, role: 'chef' }))}
-                        className={`flex flex-col items-center justify-center py-2 rounded-3xl border-2 transition-all gap-3 ${formData.role === 'chef'
-                          ? 'border-[#2E5A88] bg-[#2E5A88]/5 text-[#2E5A88] shadow-lg shadow-[#2E5A88]/10'
-                          : 'border-gray-100 hover:border-gray-200 text-gray-400'
-                          }`}
-                      >
-                        <div className={`p-3 rounded-2xl transition-colors ${formData.role === 'chef' ? 'bg-[#2E5A88] text-white' : 'bg-gray-50'}`}>
-                          <ChefHat size={24} />
-                        </div>
-                        <span className="font-bold text-sm">Chef</span>
-                      </button>
-                    </div>
-                  </div>
                   <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-[0.1em] text-gray-400 ml-1">Full Name</label>
+                    <label className="text-xs font-black uppercase tracking-[0.1em] text-gray-400 ml-1">{t('full_name')}</label>
                     <div className="relative group">
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2E5A88] transition-colors" size={20} />
                       <Input
@@ -330,7 +297,7 @@ export default function AuthPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-[0.1em] text-gray-400 ml-1">Work Email</label>
+                    <label className="text-xs font-black uppercase tracking-[0.1em] text-gray-400 ml-1">{t('work_email')}</label>
                     <div className="relative group">
                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2E5A88] transition-colors" size={20} />
                       <Input
@@ -344,7 +311,7 @@ export default function AuthPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-[0.1em] text-gray-400 ml-1">Password</label>
+                    <label className="text-xs font-black uppercase tracking-[0.1em] text-gray-400 ml-1">{t('password')}</label>
                     <div className="relative group">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2E5A88] transition-colors" size={20} />
                       <Input
@@ -369,7 +336,7 @@ export default function AuthPage() {
                     onClick={() => handleSubmit("Signup")}
                     disabled={loading}
                   >
-                    {loading ? "Creating Account..." : "Create Free Account"}
+                    {loading ? "Creating Account..." : t('create_account')}
                   </Button>
                 </TabsContent>
               </motion.div>
@@ -378,7 +345,7 @@ export default function AuthPage() {
 
 
           <p className="mt-10 text-center text-sm font-medium text-gray-400">
-            By continuing, you agree to our <span className="text-[#1F2A44] hover:underline cursor-pointer font-bold">Terms of Service</span>.
+            {t('terms_info')}
           </p>
         </motion.div>
       </div>

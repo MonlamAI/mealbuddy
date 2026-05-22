@@ -32,10 +32,10 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory,
+    use HasApiTokens,
+        HasFactory,
         Notifiable,
-        TwoFactorAuthenticatable,
-        HasApiTokens;
+        TwoFactorAuthenticatable;
 
     /*
     |--------------------------------------------------------------------------
@@ -46,6 +46,16 @@ class User extends Authenticatable
     public function lunchOrders()
     {
         return $this->hasMany(LunchOrder::class);
+    }
+
+    public function monthlyBills()
+    {
+        return $this->hasMany(UserMonthlyBill::class);
+    }
+
+    public function uploadedMonthlyBills()
+    {
+        return $this->hasMany(MonthlyBill::class, 'uploaded_by');
     }
 
     /*
@@ -83,6 +93,11 @@ class User extends Authenticatable
     public function isChef(): bool
     {
         return $this->role === 'chef';
+    }
+
+    public function isAccountant(): bool
+    {
+        return $this->role === 'accountant';
     }
 
     public function isSuperAdmin(): bool

@@ -87,11 +87,17 @@ return [
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
+            'host' => (file_exists('/.dockerenv') || filter_var(env('RUNNING_IN_DOCKER', false), FILTER_VALIDATE_BOOL))
+                ? 'postgres'
+                : env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'laravel'),
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
+            'username' => (file_exists('/.dockerenv') || filter_var(env('RUNNING_IN_DOCKER', false), FILTER_VALIDATE_BOOL))
+                ? (env('DB_USERNAME') ?: 'mealbuddy')
+                : env('DB_USERNAME', 'root'),
+            'password' => (file_exists('/.dockerenv') || filter_var(env('RUNNING_IN_DOCKER', false), FILTER_VALIDATE_BOOL))
+                ? (env('DB_PASSWORD') ?: 'secret')
+                : env('DB_PASSWORD', ''),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,

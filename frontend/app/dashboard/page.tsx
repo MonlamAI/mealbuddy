@@ -39,6 +39,9 @@ import {
     Tooltip,
     ResponsiveContainer
 } from 'recharts';
+import { useToast } from '@/components/providers/toast-provider';
+import { apiUrl, authHeaders } from '@/lib/api-url';
+import { useLanguage, LanguageSwitcher } from '@/components/providers/language-provider';
 
 // --- Types ---
 
@@ -73,10 +76,11 @@ const GlassCard = ({ children, className = "" }: { children: React.ReactNode; cl
 );
 
 const Badge = ({ status }: { status: ParticipationStatus }) => {
+    const { t } = useLanguage();
     if (status === 'no_response') {
         return (
             <span className="px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 w-fit bg-slate-50 text-slate-500 border border-slate-200">
-                <Clock size={14} /> Waiting
+                <Clock size={14} /> {t('waiting_filter')}
             </span>
         );
     }
@@ -85,7 +89,7 @@ const Badge = ({ status }: { status: ParticipationStatus }) => {
         <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 w-fit ${isJoining ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'
             }`}>
             {isJoining ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
-            {isJoining ? 'Joining' : 'Skipped'}
+            {isJoining ? t('joined') : t('skipped')}
         </span>
     );
 };
@@ -94,6 +98,8 @@ const Badge = ({ status }: { status: ParticipationStatus }) => {
 
 export default function ChefDashboard() {
     const router = useRouter();
+    const { showToast } = useToast();
+    const { t } = useLanguage();
     const [user, setUser] = useState<{ name: string } | null>(null);
     const [data, setData] = useState<DashboardData | null>(null);
     const [chartData, setChartData] = useState<any[]>([]);
@@ -105,8 +111,10 @@ export default function ChefDashboard() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [newMealName, setNewMealName] = useState("");
     const [previewImage, setPreviewImage] = useState<string | null>(null);
+    const [menuImageFile, setMenuImageFile] = useState<File | null>(null);
     const [selectedWeekday, setSelectedWeekday] = useState('mon');
     const [weeklyMenu, setWeeklyMenu] = useState<any[]>([]);
+    const [isSavingMenu, setIsSavingMenu] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // --- Broadcast State ---
@@ -114,39 +122,90 @@ export default function ChefDashboard() {
     const [broadcastMessage, setBroadcastMessage] = useState("");
     const [isBroadcasting, setIsBroadcasting] = useState(false);
 
+    // --- Chef Personal Stats & Voting State ---
+    const [personalStats, setPersonalStats] = useState<any>({
+        totalLunchEaten: 0,
+        joinedThisMonth: 0,
+        skippedThisMonth: 0
+    });
+    const [recentActivity, setRecentActivity] = useState<any[]>([]);
+    const [todayPoll, setTodayPoll] = useState<any>({
+        status: 'opted_in',
+        lunch_day_id: null,
+        is_deadline_met: false
+    });
+    const [isSubmittingVote, setIsSubmittingVote] = useState(false);
+
     // Simulation of API Fetch
     useEffect(() => {
+        let userObj: { name: string; role?: string } | null = null;
         const savedUser = localStorage.getItem('user');
         if (savedUser) {
             try {
-                setUser(JSON.parse(savedUser));
+                userObj = JSON.parse(savedUser);
+                setUser(userObj);
             } catch (e) {
                 console.error("Failed to parse user data");
             }
         }
 
+        const token = localStorage.getItem('token');
+        if (!token) {
+            router.push('/login');
+            return;
+        }
+
+        // Strict Client-Side Route Guard: block access for non-chef roles.
+        // Keep loading = true to avoid showing a flash of restricted content.
+        if (!userObj || userObj.role !== 'chef') {
+            if (userObj) {
+                router.push('/user_dashboard');
+            } else {
+                router.push('/login');
+            }
+            return;
+        }
+
         const fetchData = async () => {
             try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    router.push('/login');
-                    return;
-                }
+                const headers = authHeaders();
 
-                const menuRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/weekly-menus`, { cache: 'no-store' });
+                const [menuRes, dashRes, statsRes, activityRes, todayPollRes] = await Promise.all([
+                    fetch(apiUrl('/v1/weekly-menus'), { cache: 'no-store' }),
+                    fetch(apiUrl('/v1/chef/dashboard'), { headers }),
+                    fetch(apiUrl('/v1/user/stats'), { headers }),
+                    fetch(apiUrl('/v1/user/activity?limit=3'), { headers }),
+                    fetch(apiUrl('/v1/today-poll'), { headers })
+                ]);
+
                 if (menuRes.ok) {
                     const menuData = await menuRes.json();
                     setWeeklyMenu(menuData);
                 }
 
-                const dashRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/chef/dashboard`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
                 if (dashRes.ok) {
                     const payload = await dashRes.json();
                     setData(payload.dashboardData);
                     setChartData(payload.chartData);
+                }
+
+                if (statsRes.ok) {
+                    const statsData = await statsRes.json();
+                    setPersonalStats(statsData);
+                }
+
+                if (activityRes.ok) {
+                    const activityData = await activityRes.json();
+                    setRecentActivity(Array.isArray(activityData) ? activityData : []);
+                }
+
+                if (todayPollRes.ok) {
+                    const todayPollData = await todayPollRes.json();
+                    setTodayPoll({
+                        status: todayPollData.status || 'opted_in',
+                        lunch_day_id: todayPollData.lunch_day_id || null,
+                        is_deadline_met: todayPollData.is_deadline_met || false
+                    });
                 }
             } catch (error) {
                 console.error("Error fetching dashboard data", error);
@@ -157,45 +216,131 @@ export default function ChefDashboard() {
         fetchData();
     }, []);
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreviewImage(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
+    const handleChefVote = async (choice: 'yes' | 'no') => {
+        if (todayPoll.is_deadline_met || !todayPoll.lunch_day_id || isSubmittingVote) return;
 
-    const handleUpdateMenu = async () => {
+        setIsSubmittingVote(true);
+        const status = choice === 'yes' ? 'opted_in' : 'opted_out';
+
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/weekly-menus/${selectedWeekday}`, {
-                method: 'PUT',
+            const res = await fetch(apiUrl('/v1/poll'), {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    title: newMealName,
-                    image_url: previewImage
+                    lunch_day_id: todayPoll.lunch_day_id,
+                    status: status
                 })
             });
 
             if (res.ok) {
-                const updatedItem = await res.json();
-                setWeeklyMenu(prev => prev.map(item => item.weekday === selectedWeekday ? updatedItem : item));
+                showToast(t('vote_recorded'));
 
-                // If it matches current dashboard view (simplified today check)
-                if (data) {
-                    setData({ ...data, todayMeal: newMealName });
+                // Refresh chef stats, activity, and checklist
+                const headers = authHeaders();
+                const [dashRes, statsRes, activityRes, todayPollRes] = await Promise.all([
+                    fetch(apiUrl('/v1/chef/dashboard'), { headers }),
+                    fetch(apiUrl('/v1/user/stats'), { headers }),
+                    fetch(apiUrl('/v1/user/activity?limit=3'), { headers }),
+                    fetch(apiUrl('/v1/today-poll'), { headers })
+                ]);
+
+                if (dashRes.ok) {
+                    const payload = await dashRes.json();
+                    setData(payload.dashboardData);
                 }
-
-                setIsEditModalOpen(false);
+                if (statsRes.ok) {
+                    const statsData = await statsRes.json();
+                    setPersonalStats(statsData);
+                }
+                if (activityRes.ok) {
+                    const activityData = await activityRes.json();
+                    setRecentActivity(Array.isArray(activityData) ? activityData : []);
+                }
+                if (todayPollRes.ok) {
+                    const todayPollData = await todayPollRes.json();
+                    setTodayPoll({
+                        status: todayPollData.status || 'opted_in',
+                        lunch_day_id: todayPollData.lunch_day_id || null,
+                        is_deadline_met: todayPollData.is_deadline_met || false
+                    });
+                }
+            } else {
+                showToast('Failed to submit vote', 'error');
             }
+        } catch (err) {
+            console.error(err);
+            showToast('Error recording vote', 'error');
+        } finally {
+            setIsSubmittingVote(false);
+        }
+    };
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('Image must be 5MB or smaller', 'error');
+            return;
+        }
+
+        setMenuImageFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setPreviewImage(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleUpdateMenu = async () => {
+        if (!newMealName.trim()) {
+            showToast('Enter a dish name', 'error');
+            return;
+        }
+
+        setIsSavingMenu(true);
+        try {
+            const formData = new FormData();
+            formData.append('title', newMealName.trim());
+            if (menuImageFile) {
+                formData.append('image', menuImageFile);
+            }
+
+            const res = await fetch(apiUrl(`/v1/weekly-menus/${selectedWeekday}`), {
+                method: 'PUT',
+                headers: authHeaders(false),
+                body: formData,
+            });
+
+            const body = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                showToast(
+                    typeof body.message === 'string' ? body.message : 'Failed to update menu',
+                    'error'
+                );
+                return;
+            }
+
+            const updatedItem = body;
+            setWeeklyMenu(prev => prev.map(item => item.weekday === selectedWeekday ? updatedItem : item));
+
+            if (data) {
+                setData({ ...data, todayMeal: newMealName });
+            }
+
+            setMenuImageFile(null);
+            setIsEditModalOpen(false);
+            showToast('Menu updated successfully');
         } catch (error) {
-            console.error("Error updating menu", error);
+            console.error('Error updating menu', error);
+            showToast('Could not reach the server. Check that the API is running.', 'error');
+        } finally {
+            setIsSavingMenu(false);
         }
     };
 
@@ -204,11 +349,11 @@ export default function ChefDashboard() {
         setIsBroadcasting(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/broadcasts`, {
+            const res = await fetch(apiUrl('/v1/broadcasts'), {
                 method: 'POST',
                 headers: {
+                    ...authHeaders(),
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ message: broadcastMessage, type: 'info' })
             });
@@ -269,11 +414,9 @@ export default function ChefDashboard() {
                         transition={{ duration: 0.6 }}
                     >
                         <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-3">
-                            Good Morning, Chef <span className="inline-block animate-bounce"></span>
+                            {t('chef_greeting')} <span className="inline-block animate-bounce"></span>
                         </h1>
-                        <p className="text-lg text-slate-500 max-w-md">
-                            Here’s today’s lunch participation overview. You have {data?.joined} plates to prepare.
-                        </p>
+
                     </motion.div>
 
                     <motion.div
@@ -289,8 +432,8 @@ export default function ChefDashboard() {
                             )}
                         </div>
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-blue-500">Today's Special</p>
-                            <p className="text-lg font-bold text-slate-800">{todayMeal.title}</p>
+                            <p className="text-xs font-semibold uppercase tracking-wider text-blue-500">{t('todays_special')}</p>
+                            <p className="text-lg font-bold text-slate-800">{t(todayMeal.title || '')}</p>
                         </div>
                     </motion.div>
                 </section>
@@ -298,26 +441,26 @@ export default function ChefDashboard() {
                 {/* Stats Grid */}
                 <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     <StatCard
-                        label="Total Employees"
+                        label={t('total_employees')}
                         value={data?.totalEmployees || 0}
                         icon={<Users className="text-blue-600" />}
                         delay={0.1}
                     />
                     <StatCard
-                        label="Joined Lunch"
+                        label={t('joined_lunch')}
                         value={data?.joined || 0}
                         icon={<CheckCircle2 className="text-emerald-600" />}
                         delay={0.2}
 
                     />
                     <StatCard
-                        label="Skipped Lunch"
+                        label={t('skipped_lunch')}
                         value={data?.skipped || 0}
                         icon={<XCircle className="text-rose-600" />}
                         delay={0.3}
                     />
                     <StatCard
-                        label="Participation Rate"
+                        label={t('participation_rate')}
                         value={`${Math.round(((data?.joined || 0) / (data?.totalEmployees || 1)) * 100)}%`}
                         icon={<TrendingUp className="text-amber-600" />}
                         delay={0.4}
@@ -330,18 +473,27 @@ export default function ChefDashboard() {
                     <div className="lg:col-span-2 space-y-8">
                         <GlassCard className="p-8">
                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                                <h3 className="text-xl font-bold">Participation Details</h3>
+                                <h3 className="text-xl font-bold">{t('participation_details')}</h3>
                                 <div className="flex flex-wrap items-center gap-2 bg-slate-50 p-1 rounded-2xl border border-slate-100">
-                                    {['all', 'joining', 'skipped', 'no_response'].map((f) => (
-                                        <button
-                                            key={f}
-                                            onClick={() => setActiveFilter(f as any)}
-                                            className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-all ${activeFilter === f ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                                                }`}
-                                        >
-                                            {f === 'no_response' ? 'waiting' : f}
-                                        </button>
-                                    ))}
+                                    {['all', 'joining', 'skipped', 'no_response'].map((f) => {
+                                        const getFilterLabel = (filterVal: string) => {
+                                            if (filterVal === 'all') return t('all_filter');
+                                            if (filterVal === 'joining') return t('joined');
+                                            if (filterVal === 'skipped') return t('skipped');
+                                            if (filterVal === 'no_response') return t('waiting_filter');
+                                            return filterVal;
+                                        };
+                                        return (
+                                            <button
+                                                key={f}
+                                                onClick={() => setActiveFilter(f as any)}
+                                                className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-all ${activeFilter === f ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                                                    }`}
+                                            >
+                                                {getFilterLabel(f)}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
@@ -349,7 +501,7 @@ export default function ChefDashboard() {
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                                 <input
                                     type="text"
-                                    placeholder="Search by employee name..."
+                                    placeholder={t('search_placeholder')}
                                     className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -369,42 +521,113 @@ export default function ChefDashboard() {
                             </div>
                         </GlassCard>
 
-                        {/* Trends Chart */}
-                        <GlassCard className="p-8">
-                            <div className="flex justify-between items-center mb-6">
-                                <div>
-                                    <h3 className="text-xl font-bold">Weekly Joining</h3>
-                                    <p className="text-sm text-slate-500">Participation over the last 5 days</p>
+                        {/* Chef Personal Section */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                            {/* Left Side: Today's Vote & Stats Box */}
+                            <div className="space-y-6">
+                                {/* Vote Card */}
+                                <GlassCard className="p-6">
+                                    <h3 className="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
+                                        <Utensils size={18} className="text-blue-600" />
+                                        {t('will_you_join')}
+                                    </h3>
+
+                                    {todayPoll.is_deadline_met ? (
+                                        <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex items-center gap-3 w-full">
+                                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                                <Calendar className="text-blue-500" size={20} />
+                                            </div>
+                                            <p className="text-sm font-medium text-slate-500">
+                                                {t('voting_locked')}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="flex gap-3">
+                                            <button
+                                                disabled={isSubmittingVote || !todayPoll.lunch_day_id}
+                                                onClick={() => handleChefVote('yes')}
+                                                className={`flex-1 py-3 px-4 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${todayPoll.status === 'opted_in'
+                                                        ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/25'
+                                                        : 'bg-white border-slate-100 text-slate-600 hover:border-slate-200'
+                                                    }`}
+                                            >
+                                                <CheckCircle2 size={16} />
+                                                {t('vote_yes')}
+                                            </button>
+                                            <button
+                                                disabled={isSubmittingVote || !todayPoll.lunch_day_id}
+                                                onClick={() => handleChefVote('no')}
+                                                className={`flex-1 py-3 px-4 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2 ${todayPoll.status === 'opted_out'
+                                                        ? 'bg-rose-500 border-rose-500 text-white shadow-md shadow-rose-500/25'
+                                                        : 'bg-white border-slate-100 text-slate-600 hover:border-slate-200'
+                                                    }`}
+                                            >
+                                                <XCircle size={16} />
+                                                {t('vote_no')}
+                                            </button>
+                                        </div>
+                                    )}
+                                </GlassCard>
+
+                                {/* Personal Stats Grid */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-5 rounded-3xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between h-36">
+                                        <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                                            <Utensils size={18} />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-2xl font-black text-slate-900 leading-none mb-1">{personalStats.totalLunchEaten}</h4>
+                                            <p className="text-xs font-bold text-slate-700 leading-none">{t('total_meals_eaten')}</p>
+                                            <p className="text-[10px] text-slate-400 mt-1">{t('since_joined')}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-5 rounded-3xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between h-36">
+                                        <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                                            <Calendar size={18} />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-2xl font-black text-slate-900 leading-none mb-1">{personalStats.joinedThisMonth + personalStats.skippedThisMonth}</h4>
+                                            <p className="text-xs font-bold text-slate-700 leading-none">{t('current_month')}</p>
+                                            <p className="text-[10px] text-slate-400 mt-1">{t('days_tracked')}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <Calendar className="text-slate-400" size={20} />
                             </div>
-                            <div className="h-[250px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={chartData}>
-                                        <defs>
-                                            <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#2E5A88" stopOpacity={0.1} />
-                                                <stop offset="95%" stopColor="#2E5A88" stopOpacity={0} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                        <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} dy={10} />
-                                        <YAxis hide />
-                                        <Tooltip
-                                            contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                                        />
-                                        <Area
-                                            type="monotone"
-                                            dataKey="count"
-                                            stroke="#2E5A88"
-                                            strokeWidth={3}
-                                            fillOpacity={1}
-                                            fill="url(#colorCount)"
-                                        />
-                                    </AreaChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </GlassCard>
+
+                            {/* Right Side: Recent Activity Card */}
+                            <GlassCard className="p-6 flex flex-col justify-between">
+                                <div>
+                                    <h3 className="font-bold text-slate-800 text-lg mb-6 flex items-center gap-2">
+                                        <Clock size={18} className="text-slate-500" />
+                                        {t('recent_activity')}
+                                    </h3>
+
+                                    <div className="space-y-4">
+                                        {recentActivity.length > 0 ? (
+                                            recentActivity.map((activity: any) => (
+                                                <div key={activity.id} className="flex items-center gap-3">
+                                                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${activity.status === 'opted_in' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'}`}>
+                                                        {activity.status === 'opted_in' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-slate-700">{activity.status === 'opted_in' ? t('im_joining') : t('skip_today')}</p>
+                                                        <p className="text-[10px] text-slate-400">
+                                                            {new Date(activity.lunch_day.lunch_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="text-center py-6">
+                                                <p className="text-sm text-slate-500">{t('no_recent_activity')}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </GlassCard>
+                        </div>
                     </div>
 
                     {/* Sidebar Panel */}
@@ -416,13 +639,13 @@ export default function ChefDashboard() {
                             <div className="relative z-10">
                                 <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                                     <Clock size={20} />
-                                    Prep Timeline
+                                    {t('prep_timeline')}
                                 </h3>
 
                                 <div className="space-y-6">
                                     <div>
                                         <div className="flex justify-between text-sm mb-2 opacity-80">
-                                            <span>Total Plates Needed</span>
+                                            <span>{t('total_plates_needed')}</span>
                                             <span className="font-bold">{data?.joined}</span>
                                         </div>
                                         <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
@@ -435,8 +658,8 @@ export default function ChefDashboard() {
                                     </div>
 
                                     <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
-                                        <p className="text-xs uppercase tracking-widest opacity-70 mb-1">Response Cutoff</p>
-                                        <p className="text-2xl font-black">10:00 AM</p>
+                                        <p className="text-xs uppercase tracking-widest opacity-70 mb-1">{t('response_cutoff_label')}</p>
+                                        <p className="text-2xl font-black">{t('response_cutoff_time')}</p>
 
                                     </div>
 
@@ -448,18 +671,20 @@ export default function ChefDashboard() {
                                                 const today = (todayIndex === 0 || todayIndex === 6) ? 'mon' : days[todayIndex];
 
                                                 setSelectedWeekday(today);
+                                                setMenuImageFile(null);
                                                 const existing = weeklyMenu.find(m => m.weekday === today);
                                                 if (existing) {
                                                     setNewMealName(existing.title);
-                                                    setPreviewImage(existing.image_url);
+                                                    setPreviewImage(existing.image_url ?? null);
                                                 } else {
                                                     setNewMealName(data?.todayMeal || "");
+                                                    setPreviewImage(null);
                                                 }
                                                 setIsEditModalOpen(true);
                                             }}
                                             className="w-full py-3 bg-white text-blue-600 font-bold rounded-2xl hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
                                         >
-                                            Edit Weekly Menu
+                                            {t('edit_weekly_menu')}
                                             <ArrowUpRight size={18} />
                                         </button>
                                     </div>
@@ -468,18 +693,18 @@ export default function ChefDashboard() {
                         </GlassCard>
 
                         <GlassCard className="p-6">
-                            <h4 className="font-bold mb-4">Quick Actions</h4>
+                            <h4 className="font-bold mb-4">{t('quick_actions')}</h4>
                             <div className="grid grid-cols-2 gap-3">
                                 <button
                                     onClick={() => setIsBroadcastModalOpen(true)}
                                     className="p-4 rounded-2xl bg-slate-50 hover:bg-blue-50 hover:text-blue-600 border border-slate-100 transition-all text-sm font-medium flex flex-col items-center gap-2"
                                 >
                                     <Bell size={20} />
-                                    Broadcast
+                                    {t('broadcast')}
                                 </button>
                                 <button className="p-4 rounded-2xl bg-slate-50 hover:bg-blue-50 hover:text-blue-600 border border-slate-100 transition-all text-sm font-medium flex flex-col items-center gap-2">
                                     <Filter size={20} />
-                                    CSV Export
+                                    {t('csv_export')}
                                 </button>
                             </div>
                         </GlassCard>
@@ -505,7 +730,7 @@ export default function ChefDashboard() {
                         >
                             <div className="p-8">
                                 <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-bold text-slate-800">Edit Weekly Menu</h2>
+                                    <h2 className="text-2xl font-bold text-slate-800">{t('edit_weekly_menu_title')}</h2>
                                     <button onClick={() => setIsEditModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
                                         <X size={20} />
                                     </button>
@@ -514,7 +739,7 @@ export default function ChefDashboard() {
                                 <div className="space-y-6">
                                     {/* Weekday Selection */}
                                     <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-3">Target Day</label>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-3">{t('target_day')}</label>
                                         <div className="grid grid-cols-5 gap-2">
                                             {['mon', 'tue', 'wed', 'thu', 'fri'].map((day) => (
                                                 <button
@@ -522,10 +747,14 @@ export default function ChefDashboard() {
                                                     type="button"
                                                     onClick={() => {
                                                         setSelectedWeekday(day);
+                                                        setMenuImageFile(null);
                                                         const existing = weeklyMenu.find(m => m.weekday === day);
                                                         if (existing) {
                                                             setNewMealName(existing.title);
-                                                            setPreviewImage(existing.image_url);
+                                                            setPreviewImage(existing.image_url ?? null);
+                                                        } else {
+                                                            setNewMealName('');
+                                                            setPreviewImage(null);
                                                         }
                                                     }}
                                                     className={`py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all ${selectedWeekday === day
@@ -533,7 +762,7 @@ export default function ChefDashboard() {
                                                         : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
                                                         }`}
                                                 >
-                                                    {day}
+                                                    {t(day.charAt(0).toUpperCase() + day.slice(1))}
                                                 </button>
                                             ))}
                                         </div>
@@ -541,7 +770,7 @@ export default function ChefDashboard() {
 
                                     {/* Image Upload Area */}
                                     <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-2">Dish Photo</label>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2">{t('dish_photo')}</label>
                                         <div
                                             onClick={() => fileInputRef.current?.click()}
                                             className="relative h-48 w-full rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all overflow-hidden group"
@@ -556,8 +785,8 @@ export default function ChefDashboard() {
                                             ) : (
                                                 <div className="text-center p-6">
                                                     <UploadCloud className="mx-auto text-slate-300 mb-2" size={40} />
-                                                    <p className="text-sm font-medium text-slate-500">Click to upload food image</p>
-                                                    <p className="text-xs text-slate-400 mt-1">PNG, JPG up to 5MB</p>
+                                                    <p className="text-sm font-medium text-slate-500">{t('dish_photo_upload_desc')}</p>
+                                                    <p className="text-xs text-slate-400 mt-1">{t('dish_photo_specs')}</p>
                                                 </div>
                                             )}
                                         </div>
@@ -566,7 +795,7 @@ export default function ChefDashboard() {
 
                                     {/* Dish Name Input */}
                                     <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-2">Dish Name</label>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2">{t('dish_name')}</label>
                                         <input
                                             type="text"
                                             value={newMealName}
@@ -578,9 +807,11 @@ export default function ChefDashboard() {
 
                                     <button
                                         onClick={handleUpdateMenu}
-                                        className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 active:scale-[0.98]"
+                                        disabled={isSavingMenu}
+                                        className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                                     >
-                                        Save Changes
+                                        {isSavingMenu ? <Loader2 className="animate-spin" size={20} /> : null}
+                                        {t('save_changes')}
                                     </button>
                                 </div>
                             </div>
@@ -608,7 +839,7 @@ export default function ChefDashboard() {
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                                         <Bell className="text-blue-600" />
-                                        Send Broadcast
+                                        {t('send_broadcast')}
                                     </h2>
                                     <button onClick={() => setIsBroadcastModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
                                         <X size={20} />
@@ -617,11 +848,11 @@ export default function ChefDashboard() {
 
                                 <div className="space-y-6">
                                     <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-2">Message to Users</label>
+                                        <label className="block text-sm font-semibold text-slate-700 mb-2">{t('message_to_users')}</label>
                                         <textarea
                                             value={broadcastMessage}
                                             onChange={(e) => setBroadcastMessage(e.target.value)}
-                                            placeholder="e.g. Lunch is delayed by 15 mins today!"
+                                            placeholder={t('broadcast_placeholder')}
                                             rows={4}
                                             className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium resize-none"
                                         />
@@ -632,7 +863,7 @@ export default function ChefDashboard() {
                                         disabled={isBroadcasting || !broadcastMessage.trim()}
                                         className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
                                     >
-                                        {isBroadcasting ? <Loader2 className="animate-spin" size={20} /> : "Send Broadcast"}
+                                        {isBroadcasting ? <Loader2 className="animate-spin" size={20} /> : t('send_broadcast')}
                                     </button>
                                 </div>
                             </div>
@@ -647,9 +878,10 @@ export default function ChefDashboard() {
 // --- Sub-components ---
 
 function Header({ user, onLogout, onNavigateHome }: { user: any; onLogout: () => void; onNavigateHome: () => void }) {
+    const { t } = useLanguage();
     const [broadcasts, setBroadcasts] = useState<any[]>([]);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    
+
     useEffect(() => {
         const fetchBroadcasts = async () => {
             try {
@@ -662,7 +894,7 @@ function Header({ user, onLogout, onNavigateHome }: { user: any; onLogout: () =>
                     const data = await res.json();
                     setBroadcasts(Array.isArray(data) ? data : []);
                 }
-            } catch (e) {}
+            } catch (e) { }
         };
         fetchBroadcasts();
         const interval = setInterval(fetchBroadcasts, 60000);
@@ -676,7 +908,7 @@ function Header({ user, onLogout, onNavigateHome }: { user: any; onLogout: () =>
         try {
             const token = localStorage.getItem('token');
             setBroadcasts(prev => prev.map(b => b.id === id ? { ...b, is_read: true } : b));
-            
+
             await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/broadcasts/${id}/read`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -697,10 +929,10 @@ function Header({ user, onLogout, onNavigateHome }: { user: any; onLogout: () =>
                 </div>
 
                 <div className="flex items-center gap-4">
-
+                    <LanguageSwitcher />
 
                     <div className="relative">
-                        <button 
+                        <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             className="p-2.5 text-slate-500 hover:bg-slate-50 rounded-xl transition-colors relative"
                         >
@@ -712,16 +944,16 @@ function Header({ user, onLogout, onNavigateHome }: { user: any; onLogout: () =>
 
                         <AnimatePresence>
                             {isDropdownOpen && (
-                                <motion.div 
+                                <motion.div
                                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                     className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50"
                                 >
                                     <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                        <h3 className="font-bold text-slate-800">Notifications</h3>
+                                        <h3 className="font-bold text-slate-800">{t('notifications')}</h3>
                                         {unreadCount > 0 && (
-                                            <span className="text-xs font-semibold bg-blue-100 text-blue-600 px-2 py-1 rounded-lg">{unreadCount} New</span>
+                                            <span className="text-xs font-semibold bg-blue-100 text-blue-600 px-2 py-1 rounded-lg">{unreadCount} {t('new_badge')}</span>
                                         )}
                                     </div>
                                     <div className="max-h-80 overflow-y-auto p-2">
@@ -734,13 +966,13 @@ function Header({ user, onLogout, onNavigateHome }: { user: any; onLogout: () =>
                                                     <div className="flex-1">
                                                         <p className="text-sm text-slate-800 font-medium leading-snug">{b.message}</p>
                                                         <p className="text-[10px] text-slate-400 mt-1">
-                                                            {new Date(b.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • Chef {b.user?.name?.split(' ')[0] || 'Andre'}
+                                                            {new Date(b.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Chef {b.user?.name?.split(' ')[0] || 'Andre'}
                                                         </p>
                                                     </div>
                                                     {!b.is_read && (
-                                                        <button 
+                                                        <button
                                                             onClick={(e) => handleMarkAsRead(e, b.id)}
-                                                            className="text-slate-400 hover:text-blue-600 transition-colors shrink-0" 
+                                                            className="text-slate-400 hover:text-blue-600 transition-colors shrink-0"
                                                             title="Mark as read"
                                                         >
                                                             <CheckCheck size={18} />
@@ -750,7 +982,7 @@ function Header({ user, onLogout, onNavigateHome }: { user: any; onLogout: () =>
                                             </div>
                                         )) : (
                                             <div className="p-6 text-center text-slate-500 text-sm">
-                                                No recent notifications
+                                                {t('no_notifications')}
                                             </div>
                                         )}
                                     </div>
@@ -810,6 +1042,7 @@ function StatCard({ label, value, icon, delay, trend }: any) {
 }
 
 function EmployeeRow({ employee }: { employee: Employee }) {
+    const { t } = useLanguage();
     const initials = employee.name.split(' ').map(n => n[0]).join('');
 
     return (
@@ -834,7 +1067,7 @@ function EmployeeRow({ employee }: { employee: Employee }) {
                 <Badge status={employee.status} />
                 <span className="text-[10px] text-slate-400 flex items-center gap-1">
                     <Clock size={10} />
-                    Voted at {employee.votedAt}
+                    {t('voted_at', { time: employee.votedAt })}
                 </span>
             </div>
         </motion.div>
@@ -842,6 +1075,7 @@ function EmployeeRow({ employee }: { employee: Employee }) {
 }
 
 function EmptyState() {
+    const { t } = useLanguage();
     return (
         <motion.div
             initial={{ opacity: 0 }}
@@ -851,13 +1085,14 @@ function EmptyState() {
             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                 <Users className="text-slate-300" size={32} />
             </div>
-            <h4 className="text-lg font-bold text-slate-800">No responses yet</h4>
-            <p className="text-slate-500 max-w-xs text-sm">Waiting for employees to cast their votes for today's lunch.</p>
+            <h4 className="text-lg font-bold text-slate-800">{t('no_responses_yet')}</h4>
+            <p className="text-slate-500 max-w-xs text-sm">{t('no_responses_desc')}</p>
         </motion.div>
     );
 }
 
 function LoadingState() {
+    const { t } = useLanguage();
     return (
         <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6">
             <motion.div
@@ -883,7 +1118,7 @@ function LoadingState() {
             </div>
             <div className="mt-8 flex items-center gap-2 text-slate-400 font-medium">
                 <Loader2 className="animate-spin" size={18} />
-                Sizzling the data...
+                {t('sizzling_data')}
             </div>
         </div>
     );

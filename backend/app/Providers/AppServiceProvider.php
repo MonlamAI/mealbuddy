@@ -2,9 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\MonthlyBill;
+use App\Models\UserMonthlyBill;
+use App\Policies\MonthlyBillPolicy;
+use App\Policies\UserMonthlyBillPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -23,6 +28,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::policy(MonthlyBill::class, MonthlyBillPolicy::class);
+        Gate::policy(UserMonthlyBill::class, UserMonthlyBillPolicy::class);
+
         $this->configureDefaults();
     }
 

@@ -1,12 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\LunchController;
-use App\Http\Controllers\Api\ExpenseController;
-use App\Http\Controllers\Api\MenuController;
 use App\Http\Controllers\Api\BroadcastController;
+use App\Http\Controllers\Api\ExpenseController;
+use App\Http\Controllers\Api\LunchController;
+use App\Http\Controllers\Api\MenuController;
+use App\Http\Controllers\Api\MonthlyBillController;
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
 
@@ -29,7 +29,6 @@ Route::prefix('v1')->group(function () {
     */
 
     Route::get('/weekly-menus', [MenuController::class, 'index']);
-    Route::put('/weekly-menus/{weekday}', [MenuController::class, 'update']);
 
     /*
     |--------------------------------------------------------------------------
@@ -43,6 +42,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/user', [AuthController::class, 'user']);
 
         Route::post('/logout', [AuthController::class, 'logout']);
+
+        Route::put('/weekly-menus/{weekday}', [MenuController::class, 'update']);
 
         /*
         |--------------------------------------------------------------------------
@@ -91,5 +92,18 @@ Route::prefix('v1')->group(function () {
         */
 
         Route::post('/expenses', [ExpenseController::class, 'store']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Monthly Billing
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/user/monthly-bills', [MonthlyBillController::class, 'userBills']);
+
+        Route::get('/monthly-bills', [MonthlyBillController::class, 'index']);
+        Route::post('/monthly-bills', [MonthlyBillController::class, 'store']);
+        Route::get('/monthly-bills/{monthlyBill}', [MonthlyBillController::class, 'show']);
+        Route::patch('/monthly-bills/{monthlyBill}/user-bills/{userMonthlyBill}', [MonthlyBillController::class, 'updatePayment']);
     });
 });

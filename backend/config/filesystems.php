@@ -17,6 +17,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Monthly Bill Image Storage
+    |--------------------------------------------------------------------------
+    |
+    | Uses a dedicated disk for cafeteria bill uploads. In production, set
+    | BILL_STORAGE_DISK=s3 (or another S3-compatible disk such as R2).
+    |
+    */
+
+    'bills_disk' => env('BILL_STORAGE_DISK', 'bills'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |
@@ -56,6 +68,14 @@ return [
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => false,
+            'report' => false,
+        ],
+
+        'bills' => [
+            'driver' => 'local',
+            'root' => storage_path('app/bills'),
+            'visibility' => 'private',
             'throw' => false,
             'report' => false,
         ],

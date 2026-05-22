@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Users\Schemas;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
 
 class UserForm
@@ -22,6 +23,14 @@ class UserForm
                 DateTimePicker::make('email_verified_at'),
                 TextInput::make('password')
                     ->password()
+                    ->required(),
+                Select::make('role')
+                    ->options([
+                        'employee' => 'Employee',
+                        'chef' => 'Chef',
+                        'accountant' => 'Accountant',
+                    ])
+                    ->default('employee')
                     ->required(),
                 Textarea::make('two_factor_secret')
                     ->columnSpanFull(),

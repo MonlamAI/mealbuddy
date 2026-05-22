@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Header from '@/components/header';
 import {
     History,
     CheckCircle2,
@@ -46,8 +47,9 @@ export default function ActivityHistoryPage() {
     }, [router]);
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans p-6 md:p-12">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans">
+            <Header />
+            <div className="max-w-4xl mx-auto px-4 pt-28 pb-20">
                 <button 
                     onClick={() => router.push('/user_dashboard')}
                     className="flex items-center gap-2 text-slate-500 hover:text-blue-600 font-medium mb-8 transition-colors"
