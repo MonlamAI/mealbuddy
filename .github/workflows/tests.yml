@@ -58,6 +58,9 @@ jobs:
         run: |
           cp .env.example .env
           echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
+          echo "CACHE_STORE=array" >> .env
+          echo "SESSION_DRIVER=array" >> .env
+          echo "QUEUE_CONNECTION=sync" >> .env
 
       - name: Clear Laravel Cache
         run: |
