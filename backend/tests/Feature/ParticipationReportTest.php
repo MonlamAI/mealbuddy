@@ -30,9 +30,13 @@ beforeEach(function () {
         'created_at' => '2026-04-01 00:00:00'
     ]);
 
+    /**
+     * FIX: Make test deterministic
+     * Previously it was "Test Meal" but assertion expected "Chicken Curry Rice"
+     */
     $this->menu = WeeklyMenu::firstOrCreate(
         ['weekday' => 'mon'],
-        ['title' => 'Test Meal']
+        ['title' => 'Chicken Curry Rice']
     );
 
     $this->lunchDay = LunchDay::create([
@@ -83,6 +87,7 @@ it('allows accountant to retrieve weekly participation report', function () {
         ->assertJsonPath('week_end', '2026-04-10');
 
     $users = $response->json('users');
+
     $empData = collect($users)->firstWhere('id', $this->employee->id);
     expect($empData['days']['2026-04-07'])->toBe('joining');
 
@@ -99,6 +104,7 @@ it('allows accountant to retrieve monthly participation report', function () {
         ->assertJsonPath('year', 2026);
 
     $users = $response->json('users');
+
     $empData = collect($users)->firstWhere('id', $this->employee->id);
     expect($empData['joined_count'])->toBe(1);
     expect($empData['skipped_count'])->toBe(0);
