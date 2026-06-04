@@ -27,12 +27,12 @@ class LunchController extends Controller
         ]);
     }
 
-    //  CORE FEATURE: Poll before 4PM
+    //  CORE FEATURE: Poll before 10AM
     public function poll(Request $request)
     {
         $now = Carbon::now();
 
-        if ($now->hour >= 16) {
+        if ($now->hour >= 10) {
             return response()->json(['error' => 'Polling closed'], 403);
         }
 
@@ -155,7 +155,7 @@ class LunchController extends Controller
             'lunch_day_id' => $lunchDay->id,
             'menu' => $menu,
             'status' => $order ? $order->status : 'opted_in', // default to opted_in
-            'is_deadline_met' => Carbon::now()->hour >= 16
+            'is_deadline_met' => Carbon::now()->hour >= 10
         ]);
     }
 
@@ -271,5 +271,206 @@ class LunchController extends Controller
             ],
             'chartData' => $chartData
         ]);
+    }
+
+    // Accountant Participation Report (Daily, Weekly, Monthly)
+    public function participationReport(Request $request)
+    {
+        // Require accountant or admin role
+        if ($request->user()->role !== 'accountant' && $request->user()->role !== 'admin') {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $type = $request->query('type', 'daily'); // daily, weekly, monthly
+        $dateStr = $request->query('date', Carbon::today()->toDateString());
+        $month = (int) $request->query('month', Carbon::today()->month);
+        $year = (int) $request->query('year', Carbon::today()->year);
+
+        $activeUsers = User::where('is_active', true)
+            ->whereIn('role', ['employee', 'chef', 'accountant'])
+            ->get();
+
+        if ($type === 'daily') {
+            $parsedDate = Carbon::parse($dateStr);
+            $dayRecord = LunchDay::with('menu')->where('lunch_date', $parsedDate->toDateString())->first();
+            
+            $usersData = [];
+            foreach ($activeUsers as $user) {
+                $userRegisterDate = Carbon::parse($user->created_at)->toDateString();
+                
+                if ($parsedDate->toDateString() < $userRegisterDate) {
+                    $status = 'not_registered';
+                    $votedAt = '--:--';
+                } else {
+                    $status = 'joining'; // default
+                    $votedAt = '--:--';
+                    
+                    if ($dayRecord) {
+                        $order = LunchOrder::where('lunch_day_id', $dayRecord->id)
+                            ->where('user_id', $user->id)
+                            ->first();
+                            
+                        if ($order) {
+                            if ($order->status === 'opted_in') {
+                                $status = 'joining';
+                            } else if ($order->status === 'opted_out') {
+                                $status = 'skipped';
+                            }
+                            $votedAt = $order->updated_at->format('g:i A');
+                        }
+                    }
+                }
+                
+                $usersData[] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => $user->role,
+                    'department' => $user->department ?? 'General',
+                    'status' => $status,
+                    'voted_at' => $votedAt
+                ];
+            }
+            
+            return response()->json([
+                'date' => $parsedDate->toDateString(),
+                'has_menu' => $dayRecord ? true : false,
+                'menu_title' => $dayRecord && $dayRecord->menu ? $dayRecord->menu->title : null,
+                'users' => $usersData
+            ]);
+            
+        } elseif ($type === 'weekly') {
+            $parsedDate = Carbon::parse($dateStr);
+            $monday = $parsedDate->copy()->startOfWeek(Carbon::MONDAY);
+            
+            // Get 5 weekdays
+            $weekdays = [];
+            for ($i = 0; $i < 5; $i++) {
+                $weekdays[] = $monday->copy()->addDays($i)->toDateString();
+            }
+            
+            // Get lunch days for these weekdays
+            $dayRecords = LunchDay::with('menu')
+                ->whereIn('lunch_date', $weekdays)
+                ->get()
+                ->keyBy('lunch_date');
+                
+            $lunchDayIds = $dayRecords->pluck('id');
+            $orders = LunchOrder::whereIn('lunch_day_id', $lunchDayIds)
+                ->get()
+                ->groupBy('lunch_day_id');
+                
+            $usersData = [];
+            foreach ($activeUsers as $user) {
+                $userRegisterDate = Carbon::parse($user->created_at)->toDateString();
+                
+                $userDays = [];
+                $userJoinedCount = 0;
+                $userSkippedCount = 0;
+                
+                foreach ($weekdays as $day) {
+                    if ($day < $userRegisterDate) {
+                        $userDays[$day] = 'not_registered';
+                    } else {
+                        $status = 'joining'; // default
+                        $dayRecord = $dayRecords->get($day);
+                        
+                        if ($dayRecord) {
+                            $dayOrders = $orders->get($dayRecord->id);
+                            $order = $dayOrders ? $dayOrders->firstWhere('user_id', $user->id) : null;
+                            
+                            if ($order) {
+                                if ($order->status === 'opted_in') {
+                                    $status = 'joining';
+                                    $userJoinedCount++;
+                                } else if ($order->status === 'opted_out') {
+                                    $status = 'skipped';
+                                    $userSkippedCount++;
+                                }
+                            } else {
+                                $userJoinedCount++; // default to joining
+                            }
+                        } else {
+                            $userJoinedCount++; // default to joining if no record yet
+                        }
+                        
+                        $userDays[$day] = $status;
+                    }
+                }
+                
+                $usersData[] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => $user->role,
+                    'department' => $user->department ?? 'General',
+                    'days' => $userDays,
+                    'joined_count' => $userJoinedCount,
+                    'skipped_count' => $userSkippedCount
+                ];
+            }
+            
+            $daysMeta = [];
+            foreach ($weekdays as $day) {
+                $dayRecord = $dayRecords->get($day);
+                $daysMeta[] = [
+                    'date' => $day,
+                    'has_menu' => $dayRecord ? true : false,
+                    'menu_title' => $dayRecord && $dayRecord->menu ? $dayRecord->menu->title : null,
+                ];
+            }
+            
+            return response()->json([
+                'week_start' => $monday->toDateString(),
+                'week_end' => $monday->copy()->addDays(4)->toDateString(),
+                'days' => $daysMeta,
+                'users' => $usersData
+            ]);
+            
+        } elseif ($type === 'monthly') {
+            // Get all lunch days in month
+            $lunchDays = LunchDay::whereMonth('lunch_date', $month)
+                ->whereYear('lunch_date', $year)
+                ->get()
+                ->keyBy('lunch_date');
+                
+            $lunchDayIds = $lunchDays->pluck('id');
+            
+            $optedOutOrders = LunchOrder::whereIn('lunch_day_id', $lunchDayIds)
+                ->where('status', 'opted_out')
+                ->get()
+                ->groupBy('user_id');
+                
+            $usersData = [];
+            foreach ($activeUsers as $user) {
+                $userRegisterDate = Carbon::parse($user->created_at)->toDateString();
+                
+                // Count lunch days in month on or after user registration
+                $userEligibleDays = $lunchDays->filter(function ($day) use ($userRegisterDate) {
+                    return $day->lunch_date >= $userRegisterDate;
+                });
+                
+                $totalEligibleCount = $userEligibleDays->count();
+                $userOptedOutCount = $optedOutOrders->get($user->id)?->count() ?? 0;
+                $joinedCount = max(0, $totalEligibleCount - $userOptedOutCount);
+                
+                $usersData[] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'role' => $user->role,
+                    'department' => $user->department ?? 'General',
+                    'total_eligible_days' => $totalEligibleCount,
+                    'joined_count' => $joinedCount,
+                    'skipped_count' => $userOptedOutCount
+                ];
+            }
+            
+            return response()->json([
+                'month' => $month,
+                'year' => $year,
+                'total_lunch_days' => $lunchDays->count(),
+                'users' => $usersData
+            ]);
+        }
+        
+        return response()->json(['error' => 'Invalid report type'], 400);
     }
 }

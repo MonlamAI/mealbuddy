@@ -1,13 +1,20 @@
-FROM node:22
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-RUN npm install
+COPY frontend ./frontend
+COPY backend ./backend
 
-COPY . .
+RUN npm install -g pnpm
+
+RUN pnpm install
+
+WORKDIR /app/frontend
+
+RUN pnpm build
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["pnpm", "start"]

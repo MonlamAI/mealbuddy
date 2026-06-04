@@ -23,11 +23,14 @@ class UserForm
                 DateTimePicker::make('email_verified_at'),
                 TextInput::make('password')
                     ->password()
-                    ->required(),
+                    ->dehydrateStateUsing(fn ($state) => \Illuminate\Support\Facades\Hash::make($state))
+                    ->dehydrated(fn ($state) => filled($state))
+                    ->required(fn (string $context): bool => $context === 'create'),
                 Select::make('role')
                     ->options([
                         'employee' => 'Employee',
                         'chef' => 'Chef',
+                        'admin' => 'Admin',
                         'accountant' => 'Accountant',
                     ])
                     ->default('employee')

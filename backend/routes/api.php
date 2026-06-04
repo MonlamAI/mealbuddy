@@ -54,6 +54,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/lunch-days', [LunchController::class, 'index']);
         Route::post('/lunch-days', [LunchController::class, 'store']);
         Route::get('/chef/dashboard', [LunchController::class, 'chefDashboardData']);
+        Route::get('/accountant/participation-report', [LunchController::class, 'participationReport']);
 
         /*
         |--------------------------------------------------------------------------

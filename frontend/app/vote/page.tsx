@@ -36,7 +36,7 @@ export default function LunchVotePage() {
   const [isDeadlineMet, setIsDeadlineMet] = useState(false);
   const [timeLeft, setTimeLeft] = useState("");
   const [user, setUser] = useState<{ name: string; role?: string } | null>(null);
-  const [todayMeal, setTodayMeal] = useState<{title: string, image: string} | null>(null);
+  const [todayMeal, setTodayMeal] = useState<{ title: string, image: string } | null>(null);
   const [lunchDayId, setLunchDayId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -45,7 +45,7 @@ export default function LunchVotePage() {
     const timer = setInterval(() => {
       const now = new Date();
       const deadline = new Date();
-      deadline.setHours(16, 0, 0, 0);
+      deadline.setHours(10, 0, 0, 0);
 
       const diff = deadline.getTime() - now.getTime();
       if (diff <= 0) {
@@ -67,7 +67,7 @@ export default function LunchVotePage() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/today-poll`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        
+
         if (res.ok) {
           const data = await res.json();
           if (data.menu) {
@@ -83,7 +83,7 @@ export default function LunchVotePage() {
             setAttendance(data.status === 'opted_in' ? 'yes' : 'no');
           }
           if (data.is_deadline_met) {
-             setIsDeadlineMet(true);
+            setIsDeadlineMet(true);
           }
         }
       } catch (err) {
@@ -123,12 +123,12 @@ export default function LunchVotePage() {
     try {
       const token = localStorage.getItem('token');
       const status = choice === 'yes' ? 'opted_in' : 'opted_out';
-      
+
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/poll`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` 
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           lunch_day_id: lunchDayId,
@@ -217,8 +217,8 @@ export default function LunchVotePage() {
                   disabled={isDeadlineMet || isSubmitting || !lunchDayId}
                   onClick={() => submitVote("yes")}
                   className={`w-full group relative flex items-center justify-between p-6 rounded-2xl border-2 transition-all duration-300 ${attendance === "yes"
-                      ? "border-[#2E5A88] bg-[#2E5A88]/5"
-                      : "border-gray-100 hover:border-gray-200"
+                    ? "border-[#2E5A88] bg-[#2E5A88]/5"
+                    : "border-gray-100 hover:border-gray-200"
                     } ${isDeadlineMet ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <div className="flex items-center gap-4">
@@ -238,8 +238,8 @@ export default function LunchVotePage() {
                   disabled={isDeadlineMet || isSubmitting || !lunchDayId}
                   onClick={() => submitVote("no")}
                   className={`w-full group flex items-center justify-between p-6 rounded-2xl border-2 transition-all duration-300 ${attendance === "no"
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-100 hover:border-gray-200"
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-100 hover:border-gray-200"
                     } ${isDeadlineMet ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   <div className="flex items-center gap-4">
@@ -255,7 +255,7 @@ export default function LunchVotePage() {
               <div className="mt-10 pt-8 border-t border-gray-50 flex flex-col items-center gap-4">
                 {isDeadlineMet ? (
                   <div className="bg-red-50 text-red-600 px-6 py-3 rounded-full flex items-center gap-2 text-sm font-bold animate-pulse">
-                    <Clock size={16} /> {t('voting_locked')}
+                    <Clock size={10} /> {t('voting_locked')}
                   </div>
                 ) : (
                   <p className="text-xs text-gray-400 font-bold uppercase tracking-widest text-center">
@@ -270,7 +270,7 @@ export default function LunchVotePage() {
                       animate={{ opacity: 1, y: 0 }}
                       className="text-[#2E5A88] text-sm font-bold flex items-center gap-2"
                     >
-                      <Check size={16} /> {t('vote_recorded')}
+                      <Check size={10} /> {t('vote_recorded')}
                     </motion.div>
                   )}
                 </AnimatePresence>

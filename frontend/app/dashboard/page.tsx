@@ -107,15 +107,8 @@ export default function ChefDashboard() {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeFilter, setActiveFilter] = useState<'all' | ParticipationStatus>('all');
 
-    // --- Edit Menu State ---
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [newMealName, setNewMealName] = useState("");
-    const [previewImage, setPreviewImage] = useState<string | null>(null);
-    const [menuImageFile, setMenuImageFile] = useState<File | null>(null);
-    const [selectedWeekday, setSelectedWeekday] = useState('mon');
+    // --- Weekly Menu State ---
     const [weeklyMenu, setWeeklyMenu] = useState<any[]>([]);
-    const [isSavingMenu, setIsSavingMenu] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // --- Broadcast State ---
     const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
@@ -279,70 +272,7 @@ export default function ChefDashboard() {
         }
     };
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
 
-        if (file.size > 5 * 1024 * 1024) {
-            showToast('Image must be 5MB or smaller', 'error');
-            return;
-        }
-
-        setMenuImageFile(file);
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setPreviewImage(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-    };
-
-    const handleUpdateMenu = async () => {
-        if (!newMealName.trim()) {
-            showToast('Enter a dish name', 'error');
-            return;
-        }
-
-        setIsSavingMenu(true);
-        try {
-            const formData = new FormData();
-            formData.append('title', newMealName.trim());
-            if (menuImageFile) {
-                formData.append('image', menuImageFile);
-            }
-
-            const res = await fetch(apiUrl(`/v1/weekly-menus/${selectedWeekday}`), {
-                method: 'PUT',
-                headers: authHeaders(false),
-                body: formData,
-            });
-
-            const body = await res.json().catch(() => ({}));
-
-            if (!res.ok) {
-                showToast(
-                    typeof body.message === 'string' ? body.message : 'Failed to update menu',
-                    'error'
-                );
-                return;
-            }
-
-            const updatedItem = body;
-            setWeeklyMenu(prev => prev.map(item => item.weekday === selectedWeekday ? updatedItem : item));
-
-            if (data) {
-                setData({ ...data, todayMeal: newMealName });
-            }
-
-            setMenuImageFile(null);
-            setIsEditModalOpen(false);
-            showToast('Menu updated successfully');
-        } catch (error) {
-            console.error('Error updating menu', error);
-            showToast('Could not reach the server. Check that the API is running.', 'error');
-        } finally {
-            setIsSavingMenu(false);
-        }
-    };
 
     const handleBroadcast = async () => {
         if (!broadcastMessage.trim()) return;
@@ -663,31 +593,7 @@ export default function ChefDashboard() {
 
                                     </div>
 
-                                    <div className="flex flex-col gap-3">
-                                        <button
-                                            onClick={() => {
-                                                const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-                                                const todayIndex = new Date().getDay();
-                                                const today = (todayIndex === 0 || todayIndex === 6) ? 'mon' : days[todayIndex];
 
-                                                setSelectedWeekday(today);
-                                                setMenuImageFile(null);
-                                                const existing = weeklyMenu.find(m => m.weekday === today);
-                                                if (existing) {
-                                                    setNewMealName(existing.title);
-                                                    setPreviewImage(existing.image_url ?? null);
-                                                } else {
-                                                    setNewMealName(data?.todayMeal || "");
-                                                    setPreviewImage(null);
-                                                }
-                                                setIsEditModalOpen(true);
-                                            }}
-                                            className="w-full py-3 bg-white text-blue-600 font-bold rounded-2xl hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            {t('edit_weekly_menu')}
-                                            <ArrowUpRight size={18} />
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
                         </GlassCard>
@@ -713,112 +619,7 @@ export default function ChefDashboard() {
                 </div>
             </main>
 
-            {/* --- Edit Menu Modal --- */}
-            <AnimatePresence>
-                {isEditModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div
-                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            onClick={() => setIsEditModalOpen(false)}
-                            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-                        />
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                            className="relative w-full max-w-lg bg-white rounded-[32px] shadow-2xl overflow-hidden"
-                        >
-                            <div className="p-8">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-bold text-slate-800">{t('edit_weekly_menu_title')}</h2>
-                                    <button onClick={() => setIsEditModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
-                                        <X size={20} />
-                                    </button>
-                                </div>
 
-                                <div className="space-y-6">
-                                    {/* Weekday Selection */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-3">{t('target_day')}</label>
-                                        <div className="grid grid-cols-5 gap-2">
-                                            {['mon', 'tue', 'wed', 'thu', 'fri'].map((day) => (
-                                                <button
-                                                    key={day}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setSelectedWeekday(day);
-                                                        setMenuImageFile(null);
-                                                        const existing = weeklyMenu.find(m => m.weekday === day);
-                                                        if (existing) {
-                                                            setNewMealName(existing.title);
-                                                            setPreviewImage(existing.image_url ?? null);
-                                                        } else {
-                                                            setNewMealName('');
-                                                            setPreviewImage(null);
-                                                        }
-                                                    }}
-                                                    className={`py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all ${selectedWeekday === day
-                                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                                                        : 'bg-slate-50 text-slate-400 hover:bg-slate-100'
-                                                        }`}
-                                                >
-                                                    {t(day.charAt(0).toUpperCase() + day.slice(1))}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Image Upload Area */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-2">{t('dish_photo')}</label>
-                                        <div
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="relative h-48 w-full rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all overflow-hidden group"
-                                        >
-                                            {previewImage ? (
-                                                <>
-                                                    <img src={previewImage} alt="Preview" className="w-full h-full object-cover" />
-                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                                        <Camera className="text-white" size={32} />
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <div className="text-center p-6">
-                                                    <UploadCloud className="mx-auto text-slate-300 mb-2" size={40} />
-                                                    <p className="text-sm font-medium text-slate-500">{t('dish_photo_upload_desc')}</p>
-                                                    <p className="text-xs text-slate-400 mt-1">{t('dish_photo_specs')}</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <input type="file" ref={fileInputRef} onChange={handleImageUpload} className="hidden" accept="image/*" />
-                                    </div>
-
-                                    {/* Dish Name Input */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-2">{t('dish_name')}</label>
-                                        <input
-                                            type="text"
-                                            value={newMealName}
-                                            onChange={(e) => setNewMealName(e.target.value)}
-                                            placeholder="e.g. Italian Pasta Primavera"
-                                            className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
-                                        />
-                                    </div>
-
-                                    <button
-                                        onClick={handleUpdateMenu}
-                                        disabled={isSavingMenu}
-                                        className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/25 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
-                                    >
-                                        {isSavingMenu ? <Loader2 className="animate-spin" size={20} /> : null}
-                                        {t('save_changes')}
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
 
             {/* --- Broadcast Modal --- */}
             <AnimatePresence>
