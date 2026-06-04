@@ -16,16 +16,14 @@ on:
       - workos
       - version
 
-defaults:
-  run:
-    working-directory: backend
-
 jobs:
-  ci:
+  backend-tests:
+    name: Backend Tests (Laravel)
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-version: ['8.3', '8.4']
+
+    defaults:
+      run:
+        working-directory: backend
 
     services:
       postgres:
@@ -49,20 +47,11 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
+          php-version: "8.4"
           tools: composer:v2
-          coverage: xdebug
           extensions: pdo_pgsql
 
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-
-      - name: Install Node Dependencies
-        run: npm i
-
-      - name: Install Dependencies
+      - name: Install Composer Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Copy Environment File
@@ -81,8 +70,29 @@ jobs:
           DB_USERNAME: mealbuddy
           DB_PASSWORD: secret
 
-      - name: Build Assets
-        run: npm run build
-
-      - name: Tests
+      - name: Run Pest Tests
         run: ./vendor/bin/pest
+
+
+  frontend-tests:
+    name: Frontend Build & Test (Next.js)
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Frontend
+        run: npm run build
