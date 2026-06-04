@@ -62,7 +62,7 @@ it('allows accountant to retrieve daily participation report', function () {
     $response->assertOk()
         ->assertJsonPath('date', '2026-04-07')
         ->assertJsonPath('has_menu', true)
-        ->assertJsonPath('menu_title', 'Test Meal');
+        ->assertJsonPath('menu_title', 'Chicken Curry Rice');
 
     $users = $response->json('users');
     expect(count($users))->toBe(3);

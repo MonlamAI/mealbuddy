@@ -47,7 +47,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.4"
+          php-version: "8.2"
           tools: composer:v2
           extensions: pdo_pgsql
 
@@ -55,12 +55,14 @@ jobs:
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Setup Laravel Environment
-  run: |
-    cp .env.example .env
-    php artisan key:generate --force
+        run: |
+          cp .env.example .env
+          echo "APP_KEY=${{ secrets.APP_KEY }}" >> .env
 
-      - name: Generate Application Key
-        run: php artisan key:generate
+      - name: Clear Laravel Cache
+        run: |
+          php artisan config:clear
+          php artisan cache:clear
 
       - name: Run Migrations
         run: php artisan migrate --force
@@ -74,7 +76,6 @@ jobs:
 
       - name: Run Pest Tests
         run: ./vendor/bin/pest
-
 
   frontend-tests:
     name: Frontend Build & Test (Next.js)
