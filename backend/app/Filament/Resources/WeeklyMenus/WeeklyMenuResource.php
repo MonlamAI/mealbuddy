@@ -26,7 +26,6 @@ class WeeklyMenuResource extends Resource
 
     protected static ?string $modelLabel = 'Weekly Menu';
 
-
     public static function form(Schema $schema): Schema
     {
         return WeeklyMenuForm::configure($schema);

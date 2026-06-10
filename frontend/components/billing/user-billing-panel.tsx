@@ -16,7 +16,7 @@ const GlassCard = ({ children, className = '' }: { children: React.ReactNode; cl
   <motion.div
     initial={{ opacity: 0, y: 16 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`bg-white/80 backdrop-blur-xl border border-slate-100 rounded-3xl shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all ${className}`}
+    className={`bg-white/80 dark:bg-[#272727]/80 backdrop-blur-xl border border-slate-100 dark:border-[#323232] rounded-3xl shadow-sm hover:shadow-xl hover:shadow-blue-500/5 transition-all text-slate-800 dark:text-[#F5F5F5] ${className}`}
   >
     {children}
   </motion.div>
@@ -28,7 +28,7 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-        paid ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-700'
+        paid ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' : 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400'
       }`}
     >
       {paid ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
@@ -41,20 +41,20 @@ function BillingRow({ item }: { item: UserMonthlyBill }) {
   const { t } = useLanguage();
   const mb = item.monthly_bill;
   if (!mb) return null;
-
+ 
   return (
-    <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
+    <div className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-[#202020] border border-transparent hover:border-slate-100 dark:hover:border-[#323232] transition-all">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
           <Receipt size={18} />
         </div>
         <div>
-          <p className="text-sm font-bold text-slate-800">{monthLabel(mb.month, mb.year)}</p>
-          <p className="text-[10px] text-slate-400">{t('meals_joined_count', { count: item.joined_count })}</p>
+          <p className="text-sm font-bold text-slate-800 dark:text-[#F5F5F5]">{monthLabel(mb.month, mb.year)}</p>
+          <p className="text-[10px] text-slate-400 dark:text-slate-400">{t('meals_joined_count', { count: item.joined_count })}</p>
         </div>
       </div>
       <div className="text-right flex flex-col items-end gap-1">
-        <p className="text-sm font-bold text-slate-900">{formatCurrency(item.amount_due)}</p>
+        <p className="text-sm font-bold text-slate-900 dark:text-[#F5F5F5]">{formatCurrency(item.amount_due)}</p>
         <StatusBadge status={item.payment_status} />
       </div>
     </div>
@@ -102,34 +102,34 @@ export default function UserBillingPanel() {
 
   return (
     <div className="space-y-6">
-      <GlassCard className="p-8 border-2 border-blue-50/80 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-100/40 to-transparent rounded-bl-full pointer-events-none" />
+      <GlassCard className="p-8 border-2 border-blue-50/80 dark:border-[#323232]/80 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-100/40 dark:from-blue-900/10 to-transparent rounded-bl-full pointer-events-none" />
         <div className="flex items-center gap-2 mb-6">
-          <Receipt className="text-[#2E5A88]" size={22} />
+          <Receipt className="text-[#2E5A88] dark:text-[#D7E8F4]" size={22} />
           <h3 className="text-xl font-bold">{t('monthly_lunch_billing')}</h3>
         </div>
-
+ 
         {display && display.monthly_bill ? (
           <div className="grid grid-cols-2 gap-4 relative z-10">
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-              <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase mb-2">
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#202020] border border-slate-100 dark:border-[#323232]">
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase mb-2">
                 <Utensils size={14} /> {t('meals_joined')}
               </div>
-              <p className="text-2xl font-bold text-slate-900">{display.joined_count}</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-[#F5F5F5]">{display.joined_count}</p>
             </div>
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
-              <div className="flex items-center gap-2 text-slate-500 text-xs font-semibold uppercase mb-2">
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#202020] border border-slate-100 dark:border-[#323232]">
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase mb-2">
                 <IndianRupee size={14} /> {t('cost_per_plate')}
               </div>
-              <p className="text-2xl font-bold text-[#2E5A88]">
+              <p className="text-2xl font-bold text-[#2E5A88] dark:text-[#D7E8F4]">
                 {formatCurrency(display.monthly_bill.plate_cost)}
               </p>
             </div>
-            <div className="p-4 rounded-2xl bg-[#2E5A88] text-white col-span-2 shadow-lg shadow-[#2E5A88]/10">
+            <div className="p-4 rounded-2xl bg-[#2E5A88] dark:bg-[#202020] border dark:border-[#323232] text-white col-span-2 shadow-lg shadow-[#2E5A88]/10 dark:shadow-none">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs uppercase tracking-widest opacity-80 mb-1">{t('total_due')}</p>
-                  <p className="text-3xl font-black">{formatCurrency(display.amount_due)}</p>
+                  <p className="text-3xl font-black text-white dark:text-[#F5F5F5]">{formatCurrency(display.amount_due)}</p>
                   <p className="text-xs opacity-70 mt-1">
                     {monthLabel(display.monthly_bill.month, display.monthly_bill.year)}
                   </p>

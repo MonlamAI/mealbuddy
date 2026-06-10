@@ -14,6 +14,7 @@ import {
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, LanguageSwitcher } from '@/components/providers/language-provider';
+import { ThemeSwitcher } from '@/components/providers/theme-provider';
 
 interface HeaderProps {
     user?: any;
@@ -166,7 +167,7 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
     };
 
     return (
-        <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 h-20">
+        <header className="fixed top-0 w-full z-50 bg-white/80 dark:bg-[#1C1C1C]/80 backdrop-blur-md border-b border-slate-100 dark:border-[#323232] h-20">
             <div className="max-w-6xl mx-auto px-4 h-full flex items-center justify-between">
 
                 {/* Logo / Title */}
@@ -174,7 +175,7 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
                     <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
                         <Utensils size={22} />
                     </div>
-                    <span className="text-xl font-black tracking-tight text-slate-800">{t('app_title')}</span>
+                    <span className="text-xl font-black tracking-tight text-slate-800 dark:text-[#F5F5F5]">{t('app_title')}</span>
                 </div>
 
                 {/* ================= DESKTOP VIEW ================= */}
@@ -198,10 +199,10 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
                                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                        className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50"
+                                        className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#202020] rounded-2xl shadow-xl border border-slate-100 dark:border-[#323232] overflow-hidden z-50"
                                     >
-                                        <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                            <h3 className="font-bold text-slate-800">{t('notifications')}</h3>
+                                        <div className="p-4 border-b border-slate-100 dark:border-[#323232] bg-slate-50 dark:bg-[#272727] flex justify-between items-center">
+                                            <h3 className="font-bold text-slate-800 dark:text-[#F5F5F5]">{t('notifications')}</h3>
                                             {unreadCount > 0 && (
                                                 <span className="text-xs font-semibold bg-blue-100 text-blue-600 px-2 py-1 rounded-lg">
                                                     {unreadCount} {t('new_badge')}
@@ -210,7 +211,7 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
                                         </div>
                                         <div className="max-h-80 overflow-y-auto p-2">
                                             {broadcasts.length > 0 ? broadcasts.map((b) => (
-                                                <div key={b.id} className={`p-3 rounded-xl transition-colors mb-1 ${b.is_read ? 'opacity-70 hover:bg-slate-50' : 'bg-blue-50/50 hover:bg-blue-50'}`}>
+                                                <div key={b.id} className={`p-3 rounded-xl transition-colors mb-1 ${b.is_read ? 'opacity-70 hover:bg-slate-50 dark:hover:bg-[#272727]' : 'bg-blue-50/50 dark:bg-[#272727]/50 hover:bg-blue-50 dark:hover:bg-[#272727]'}`}>
                                                     <div className="flex gap-3">
                                                         <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-1">
                                                             <ChefHat size={16} />
@@ -243,15 +244,17 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
                         </div>
                     )}
 
-                    <div className="h-8 w-[1px] bg-slate-100 mx-2" />
+                    <div className="h-8 w-[1px] bg-slate-100 dark:bg-[#323232] mx-2" />
                     <LanguageSwitcher />
-                    <div className="h-8 w-[1px] bg-slate-100 mx-2" />
+                    <div className="h-8 w-[1px] bg-slate-100 dark:bg-[#323232] mx-2" />
+                    <ThemeSwitcher />
+                    <div className="h-8 w-[1px] bg-slate-100 dark:bg-[#323232] mx-2" />
 
                     {currentUser ? (
                         <div className="flex items-center gap-3">
                             <div className="text-right cursor-pointer" onClick={handleProfileClick}>
-                                <p className="text-sm font-bold text-slate-800 leading-none">{currentUser.name}</p>
-                                <p className="inline-block text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded-full font-bold uppercase mt-1 tracking-wider border border-blue-100">
+                                <p className="text-sm font-bold text-slate-800 dark:text-[#F5F5F5] leading-none">{currentUser.name}</p>
+                                <p className="inline-block text-[10px] bg-blue-50 dark:bg-[#272727]/50 text-blue-600 dark:text-[#D7E8F4] px-2 py-1 rounded-full font-bold uppercase mt-1 tracking-wider border border-blue-100 dark:border-[#323232]">
                                     {currentUser.role === 'chef'
                                         ? t('role_chef')
                                         : (currentUser.role === 'accountant' ? t('role_accountant') : randomRole)}
@@ -378,8 +381,8 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
                             className="
                                 fixed right-0 bottom-0
                                 w-[85vw] max-w-[340px]
-                                bg-white/95 backdrop-blur-xl
-                                border-l border-slate-200
+                                bg-white/95 dark:bg-[#1C1C1C]/95 backdrop-blur-xl
+                                border-l border-slate-200 dark:border-[#323232]
                                 shadow-2xl
                                 z-[2000]
                                 flex flex-col
@@ -404,13 +407,17 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
                                 </button>
                             </nav>
 
-                            {/* Options Area (Language selector switcher module) */}
-                            <div className="mb-6 pt-6 border-t border-[#1F2A44]/10">
-                                <div className="flex flex-col gap-2">
+                            {/* Options Area (Language & Theme selectors) */}
+                            <div className="mb-6 pt-6 border-t border-[#1F2A44]/10 dark:border-[#323232]">
+                                <div className="flex flex-col gap-2.5">
                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Settings</span>
-                                    <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl">
-                                        <span className="text-xs font-medium text-slate-600">Language</span>
+                                    <div className="flex items-center justify-between bg-slate-50 dark:bg-[#202020] p-3 rounded-xl border border-slate-100 dark:border-[#323232]">
+                                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Language</span>
                                         <LanguageSwitcher />
+                                    </div>
+                                    <div className="flex items-center justify-between bg-slate-50 dark:bg-[#202020] p-3 rounded-xl border border-slate-100 dark:border-[#323232]">
+                                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Theme</span>
+                                        <ThemeSwitcher />
                                     </div>
                                 </div>
                             </div>
@@ -424,9 +431,9 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
                                                 handleProfileClick();
                                                 setIsSidebarOpen(false);
                                             }}
-                                            className="w-full bg-slate-50 border border-slate-100 text-slate-800 cursor-pointer py-3 rounded-xl text-center hover:bg-slate-100 transition-colors flex items-center justify-center gap-3 font-bold text-sm"
-                                        >
-                                            <div className="w-7 h-7 rounded-full bg-blue-50 border border-white overflow-hidden shrink-0 flex items-center justify-center">
+                                        className="w-full bg-slate-50 dark:bg-[#202020] border border-slate-100 dark:border-[#323232] text-slate-800 dark:text-[#F5F5F5] cursor-pointer py-3 rounded-xl text-center hover:bg-slate-100 dark:hover:bg-[#272727] transition-colors flex items-center justify-center gap-3 font-bold text-sm"
+                                    >
+                                        <div className="w-7 h-7 rounded-full bg-blue-50 dark:bg-[#272727] border border-white dark:border-[#323232] overflow-hidden shrink-0 flex items-center justify-center">
                                                 <img
                                                     src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name || 'Member'}`}
                                                     alt="User Profile"

@@ -93,10 +93,10 @@ return [
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => (file_exists('/.dockerenv') || filter_var(env('RUNNING_IN_DOCKER', false), FILTER_VALIDATE_BOOL))
-                ? (env('DB_USERNAME') ?: 'mealbuddy')
+                ? (env('DOCKER_DB_USERNAME') ?: 'mealbuddy')
                 : env('DB_USERNAME', 'root'),
             'password' => (file_exists('/.dockerenv') || filter_var(env('RUNNING_IN_DOCKER', false), FILTER_VALIDATE_BOOL))
-                ? (env('DB_PASSWORD') ?: 'secret')
+                ? (env('DOCKER_DB_PASSWORD') ?: 'strongpassword')
                 : env('DB_PASSWORD', ''),
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',

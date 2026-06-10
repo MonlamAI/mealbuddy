@@ -168,3 +168,15 @@ export async function fetchUserBilling(): Promise<UserBillingResponse> {
 
   return res.json();
 }
+
+export async function deleteMonthlyBill(id: number): Promise<void> {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/monthly-bills/${id}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Failed to delete monthly bill');
+  }
+}
+

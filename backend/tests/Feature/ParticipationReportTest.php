@@ -13,21 +13,21 @@ beforeEach(function () {
     $this->accountant = User::factory()->create([
         'role' => 'accountant',
         'is_active' => true,
-        'created_at' => '2026-04-01 00:00:00'
+        'created_at' => '2026-04-01 00:00:00',
     ]);
 
     // Create employee
     $this->employee = User::factory()->create([
         'role' => 'employee',
         'is_active' => true,
-        'created_at' => '2026-04-01 00:00:00'
+        'created_at' => '2026-04-01 00:00:00',
     ]);
 
     // Create chef
     $this->chef = User::factory()->create([
         'role' => 'chef',
         'is_active' => true,
-        'created_at' => '2026-04-01 00:00:00'
+        'created_at' => '2026-04-01 00:00:00',
     ]);
 
     /**

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { api, getCsrfCookie } from "@/lib/api";
 import { useLanguage, LanguageSwitcher } from "@/components/providers/language-provider";
+import { ThemeSwitcher } from "@/components/providers/theme-provider";
 
 export default function AuthPage() {
   const router = useRouter();
@@ -86,7 +87,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-[#F8FAFC] font-sans text-[#1F2A44] selection:bg-[#2E5A88]/20">
+    <div className="min-h-screen flex bg-background font-sans text-foreground selection:bg-[#2E5A88]/20">
 
       {/* --- LEFT SIDE: PREMIUM BRANDING PANEL --- */}
       <div className="hidden lg:flex flex-col justify-between w-[45%] bg-[#2E5A88] p-16 text-white relative overflow-hidden">
@@ -154,10 +155,11 @@ export default function AuthPage() {
       </div>
 
       {/* --- RIGHT SIDE: AUTHENTICATION FORM --- */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 lg:p-20 relative">
-        {/* Floating Language Switcher in Auth Panel */}
-        <div className="absolute top-8 right-8 z-[60]">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 lg:p-20 relative dark:bg-[#323232s]">
+        {/* Floating Language & Theme Switchers in Auth Panel */}
+        <div className="absolute top-8 right-8 z-[60] flex items-center gap-3">
           <LanguageSwitcher />
+          <ThemeSwitcher />
         </div>
 
         <motion.div
@@ -178,10 +180,10 @@ export default function AuthPage() {
 
           {/* Header */}
           <div className="mb-10">
-            <h1 className="text-4xl font-extrabold tracking-tight text-[#1F2A44] mb-3">
+            <h1 className="text-4xl font-extrabold tracking-tight text-foreground mb-3">
               {activeTab === "login" ? t('welcome_back') : t('get_started')}
             </h1>
-            <p className="text-lg text-gray-500 font-medium leading-relaxed">
+            <p className="text-lg text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
               {activeTab === "login"
                 ? t('login_subtitle')
                 : t('signup_subtitle')}
@@ -193,16 +195,16 @@ export default function AuthPage() {
             onValueChange={setActiveTab}
             className="w-full flex flex-col gap-6"
           >
-            <TabsList className="flex flex-row w-full h-auto mb-4 bg-gray-200/40 p-2 rounded-full border border-gray-200 gap-2">
+            <TabsList className="flex flex-row w-full h-auto mb-4 bg-gray-200/40 dark:bg-[#202020] p-2 rounded-full border border-gray-200 dark:border-[#323232] gap-2">
               <TabsTrigger
                 value="login"
-                className="w-full py-3 rounded-full font-bold text-base transition-all data-[state=active]:bg-white data-[state=active]:text-[#2E5A88] data-[state=active]:shadow-md"
+                className="w-full py-3 rounded-full font-bold text-base transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-[#272727] data-[state=active]:text-[#2E5A88] dark:data-[state=active]:text-[#D7E8F4] data-[state=active]:shadow-md cursor-pointer"
               >
                 {t('sign_in')}
               </TabsTrigger>
               <TabsTrigger
                 value="signup"
-                className="w-full py-3 rounded-full font-bold text-base transition-all data-[state=active]:bg-white data-[state=active]:text-[#2E5A88] data-[state=active]:shadow-md"
+                className="w-full py-3 rounded-full font-bold text-base transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-[#272727] data-[state=active]:text-[#2E5A88] dark:data-[state=active]:text-[#D7E8F4] data-[state=active]:shadow-md cursor-pointer"
               >
                 {t('sign_up')}
               </TabsTrigger>
@@ -237,7 +239,7 @@ export default function AuthPage() {
                         name="email"
                         type="email"
                         placeholder="name@company.com"
-                        className="pl-12 h-16 border-2 border-gray-100 bg-white focus:bg-white focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium"
+                        className="pl-12 h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:bg-white dark:focus:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium text-foreground dark:text-[#F5F5F5]"
                         onChange={handleInputChange}
                       />
                     </div>
@@ -254,7 +256,7 @@ export default function AuthPage() {
                         name="password"
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
-                        className="pl-12 h-16 border-2 border-gray-100 bg-white focus:bg-white focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium"
+                        className="pl-12 h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:bg-white dark:focus:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium text-foreground dark:text-[#F5F5F5]"
                         onChange={handleInputChange}
                       />
                       <button
@@ -289,8 +291,8 @@ export default function AuthPage() {
                       <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2E5A88] transition-colors" size={20} />
                       <Input
                         name="name"
-                        placeholder="John Doe"
-                        className="pl-12 h-16 border-2 border-gray-100 bg-white focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium"
+                        placeholder="Tenzin"
+                        className="pl-12 h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium text-foreground dark:text-[#F5F5F5]"
                         onChange={handleInputChange}
                       />
                     </div>
@@ -304,7 +306,7 @@ export default function AuthPage() {
                         name="email"
                         type="email"
                         placeholder="john@company.com"
-                        className="pl-12 h-16 border-2 border-gray-100 bg-white focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium"
+                        className="pl-12 h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium text-foreground dark:text-[#F5F5F5]"
                         onChange={handleInputChange}
                       />
                     </div>
@@ -318,7 +320,7 @@ export default function AuthPage() {
                         name="password"
                         type={showPassword ? "text" : "password"}
                         placeholder="Min. 8 characters"
-                        className="pl-12 h-16 border-2 border-gray-100 bg-white focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium"
+                        className="pl-12 h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium text-foreground dark:text-[#F5F5F5]"
                         onChange={handleInputChange}
                       />
                       <button

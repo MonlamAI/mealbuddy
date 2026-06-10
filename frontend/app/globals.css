@@ -38,6 +38,7 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --surface: #F8FAFC;
 }
 
 @theme inline {
@@ -83,6 +84,7 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-surface: var(--surface);
 }
 
 body {
@@ -107,46 +109,49 @@ html[lang="bo"] button {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: #1C1C1C;
+  --foreground: #F5F5F5;
+  --card: #272727;
+  --card-foreground: #F5F5F5;
+  --popover: #202020;
+  --popover-foreground: #F5F5F5;
+  --primary: #D7E8F4;
+  --primary-foreground: #1C1C1C;
+  --secondary: #D8D9F3;
+  --secondary-foreground: #1C1C1C;
+  --muted: #202020;
+  --muted-foreground: #A0A0A0;
+  --accent: #272727;
+  --accent-foreground: #F5F5F5;
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --border: #323232;
+  --input: #323232;
   --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
+  --chart-1: #95abba;
+  --chart-2: #D8D9F3;
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar: #202020;
+  --sidebar-foreground: #F5F5F5;
+  --sidebar-primary: #D7E8F4;
+  --sidebar-primary-foreground: #1C1C1C;
+  --sidebar-accent: #272727;
+  --sidebar-accent-foreground: #F5F5F5;
+  --sidebar-border: #323232;
   --sidebar-ring: oklch(0.556 0 0);
+  --surface: #202020;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }

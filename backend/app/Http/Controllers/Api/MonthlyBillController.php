@@ -156,4 +156,15 @@ class MonthlyBillController extends Controller
             'data' => new UserMonthlyBillResource($updated),
         ]);
     }
+
+    public function destroy(MonthlyBill $monthlyBill): JsonResponse
+    {
+        $this->authorize('delete', $monthlyBill);
+
+        $this->billingService->deleteMonthlyBill($monthlyBill);
+
+        return response()->json([
+            'message' => 'Monthly bill deleted successfully.',
+        ]);
+    }
 }

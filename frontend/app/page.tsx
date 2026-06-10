@@ -66,7 +66,7 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#FAFAFA] text-[#1F2A44] pt-20">
+    <main className="min-h-screen bg-background text-foreground pt-20">
       <Header />
 
       {/* HERO */}
@@ -79,7 +79,7 @@ export default function HomePage() {
           <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
             {t('hero_title')}
           </h1>
-          <p className="text-gray-500 max-w-2xl mx-auto mb-10 text-xl leading-relaxed">
+          <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-10 text-xl leading-relaxed">
             {t('hero_subtitle')}
           </p>
 
@@ -102,7 +102,7 @@ export default function HomePage() {
                   router.push('/login');
                 }
               }}
-              className="flex items-center justify-center gap-2 px-10 py-4 rounded-full border-2 border-gray-200 font-bold text-lg hover:bg-white hover:border-[#2E5A88] transition-all"
+              className="flex items-center justify-center gap-2 px-10 py-4 rounded-full border-2 border-gray-200 font-bold text-lg hover:bg-white hover:text-[#2E5A88] hover:border-[#2E5A88] transition-all"
             >
               {t('dashboard')} <ArrowRight size={20} />
             </button>
@@ -112,14 +112,14 @@ export default function HomePage() {
 
       {/* WEEKLY MENU PREVIEW */}
       <section className="max-w-7xl mx-auto px-6 py-20">
-        <div className="relative overflow-hidden bg-[#f5f5f6] rounded-[3rem] p-10 md:p-16 shadow-2xl">
+        <div className="relative overflow-hidden bg-surface rounded-[3rem] p-10 md:p-16 shadow-2xl border border-border">
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#2E5A88] blur-[100px] rounded-full" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#2E5A88]/10 blur-[100px] rounded-full" />
 
           <div className="relative z-10">
             <div className="mb-12 text-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">{t('weekly_menu_title')}</h2>
-              <p className="text-[#2e5a88] max-w-xl mx-auto">{t('weekly_menu_subtitle')}</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('weekly_menu_title')}</h2>
+              <p className="text-[#2e5a88] dark:text-blue-300 max-w-xl mx-auto">{t('weekly_menu_subtitle')}</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
@@ -129,7 +129,7 @@ export default function HomePage() {
                   <motion.div
                     key={key}
                     whileHover={{ y: -10 }}
-                    className="bg-white/50 backdrop-blur-md border border-white/10 rounded-[2.5rem] p-6 text-center transition-all hover:bg-white/10 group cursor-pointer"
+                    className="bg-white/50 dark:bg-card/50 backdrop-blur-md border border-white/10 dark:border-border/30 rounded-[2.5rem] p-6 text-center transition-all hover:bg-white/10 dark:hover:bg-card group cursor-pointer"
                   >
                     <p className="font-black text-blue-400 mb-4 uppercase tracking-[0.2em] text-[10px]">{label}</p>
 
@@ -148,7 +148,7 @@ export default function HomePage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-[#1F2A44]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
 
-                    <h3 className="text-[#2e5a88] font-bold text-sm leading-tight group-hover:text-blue-300 transition-colors">
+                    <h3 className="text-[#2e5a88] dark:text-[#D7E8F4] font-bold text-sm leading-tight group-hover:text-blue-300 dark:group-hover:text-blue-200 transition-colors">
                       {meal ? t(meal.title) : (language === 'bo' ? 'ཟས་ཐོ་མྱུར་དུ་འགོད་པ།' : 'Menu coming soon')}
                     </h3>
                   </motion.div>
@@ -181,12 +181,12 @@ export default function HomePage() {
                 desc: t('how_step3_desc'),
               },
             ].map((item, i) => (
-              <div key={i} className="relative p-8 rounded-3xl hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-gray-100">
-                <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-2xl bg-[#F0F4F8] text-[#2E5A88] mb-6">
+              <div key={i} className="relative p-8 rounded-3xl hover:bg-white dark:hover:bg-card hover:shadow-xl transition-all border border-transparent hover:border-gray-100 dark:hover:border-border">
+                <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-2xl bg-[#F0F4F8] dark:bg-[#202020] text-[#2E5A88] dark:text-[#D7E8F4] mb-6">
                   <item.icon size={28} />
                 </div>
                 <h3 className="text-xl font-bold mb-4">{item.title}</h3>
-                <p className="text-gray-500 leading-relaxed">{item.desc}</p>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>

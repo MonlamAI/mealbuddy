@@ -75,6 +75,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/user/activity', [LunchController::class, 'userActivity']);
         Route::get('/user/stats', [LunchController::class, 'userStats']);
         Route::get('/today-poll', [LunchController::class, 'todayPoll']);
+        Route::get('/calendar-poll', [LunchController::class, 'calendarPoll']);
+        Route::post('/calendar-poll/batch', [LunchController::class, 'batchPoll']);
 
         /*
         |--------------------------------------------------------------------------
@@ -106,5 +108,6 @@ Route::prefix('v1')->group(function () {
         Route::post('/monthly-bills', [MonthlyBillController::class, 'store']);
         Route::get('/monthly-bills/{monthlyBill}', [MonthlyBillController::class, 'show']);
         Route::patch('/monthly-bills/{monthlyBill}/user-bills/{userMonthlyBill}', [MonthlyBillController::class, 'updatePayment']);
+        Route::delete('/monthly-bills/{monthlyBill}', [MonthlyBillController::class, 'destroy']);
     });
 });

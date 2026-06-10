@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Broadcast;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
 use DB;
+use Illuminate\Http\Request;
 
 class BroadcastController extends Controller
 {
@@ -30,6 +30,7 @@ class BroadcastController extends Controller
         // Attach is_read flag
         $broadcasts->transform(function ($b) use ($readIds) {
             $b->is_read = in_array($b->id, $readIds);
+
             return $b;
         });
 
@@ -40,7 +41,7 @@ class BroadcastController extends Controller
     {
         $request->validate([
             'message' => 'required|string|max:1000',
-            'type' => 'nullable|string|max:50'
+            'type' => 'nullable|string|max:50',
         ]);
 
         $broadcast = Broadcast::create([
@@ -58,6 +59,7 @@ class BroadcastController extends Controller
             ['user_id' => $request->user()->id, 'broadcast_id' => $id],
             ['created_at' => Carbon::now(), 'updated_at' => Carbon::now()]
         );
+
         return response()->json(['success' => true]);
     }
 }

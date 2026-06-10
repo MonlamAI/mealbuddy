@@ -52,7 +52,9 @@ const translations = {
 
     // User Dashboard
     greeting: 'Hey',
-    user_dashboard_desc: "Track your meals and see what's cooking next.",
+    user_dashboard_desc: "Track your meals and manage your plan.",
+    dashboard_summary: "Dashboard Summary",
+    view_monthly_lunch_billing: "View Monthly Lunch Billing",
     todays_lunch: "Today's Lunch",
     tomorrows_menu: "Tomorrow's Menu",
     cutoff_passed: '10 AM Cutoff passed',
@@ -90,6 +92,14 @@ const translations = {
     meal_details_info: 'Meal includes steamed rice, cucumber raita, and seasonal dessert. All ingredients are locally sourced.',
     voting_deadline: 'Voting Deadline',
     closed: 'Closed',
+    plan_your_meals: 'Plan Your Meals',
+    calendar_subtitle: 'Quickly opt out of lunch for specific days, weeks, or the whole month.',
+    opt_out_month: 'Skip Month',
+    opt_in_month: 'Join Month',
+    skip_week: 'Skip Week',
+    join_week: 'Join Week',
+    legend_joining: 'Joining',
+    legend_skipped: 'Skipped',
     chef_broadcast_info: '{time} • Chef {name}',
     shahi_paneer_rice: 'Shahi Paneer with Jeera Rice',
     shahi_paneer_desc: 'A rich, creamy north-Indian curry paired with aromatic basmati rice and fresh cucumber salad.',
@@ -201,6 +211,10 @@ const translations = {
     mark_unpaid: 'Mark Unpaid',
     mark_paid: 'Mark Paid',
     no_matching_users: 'No matching users',
+    clear_billing: 'Clear Billing',
+    clear_billing_confirm: 'Are you sure you want to clear/delete this monthly bill? This will delete the bill and all associated user bill statistics for this month. This action cannot be undone.',
+    clear_billing_success: 'Monthly billing cleared successfully.',
+    clearing_bill: 'Clearing bill...',
     page_indicator: 'Page {page} of {totalPages} ({count} users)',
 
     // Dish Name Mappings
@@ -281,6 +295,8 @@ const translations = {
     // User Dashboard
     greeting: 'བཀྲ་ཤིས་བདེ་ལེགས།',
     user_dashboard_desc: 'ཁྱེད་ཀྱི་ཉིན་ཟས་ལ་བརྩི་ཞིབ་དང་ཟས་ཐོ་གང་ཡིན་ལྟ་བ།',
+    dashboard_summary: 'ལས་དོན་པང་ལེབ་ཕྱོགས་བསྡོམས།',
+    view_monthly_lunch_billing: 'ཟླ་རེའི་ཉིན་ཟས་རྩིས་ཐོ་ལྟ་བ།',
     todays_lunch: 'དེ་རིང་གི་ཉིན་ཟས།',
     tomorrows_menu: 'སང་ཉིན་གྱི་ཟས་ཐོ།',
     cutoff_passed: 'ཞོགས་པ་ཆུ་ཚོད་ ༡༠ པའི་དུས་བཅད་ཡོལ་ཟིན།',
@@ -318,6 +334,14 @@ const translations = {
     meal_details_info: 'ཞལ་ལག་ནང་དུ་འབྲས་དང་། ཀུ་ཀུམ་བར་ར་ཡེ་ཏ། དུས་ཚིགས་ཀྱི་མངར་ཟས་བཅས་ཚུད་ཡོད། རྒྱུ་ཆ་ཡོངས་རྫོགས་ས་གནས་ས་ཐོག་ནས་ཡིན།',
     voting_deadline: 'འདེམས་ཤོག་དུས་བཅད།',
     closed: 'སྒོ་བརྒྱབ་ཟིན།',
+    plan_your_meals: 'ཁྱེད་ཀྱི་ཉིན་ཟས་འཆར་གཞི་བཟོ་བ།',
+    calendar_subtitle: 'ཁྱེད་ཀྱི་ཉིན་ཟས་ཉིན་རེའམ་བདུན་རེ། ཡང་ན་ཟླ་རེར་བཞེས་མིན་ཐག་གཅོད་བྱེད་པ།',
+    opt_out_month: 'ཟླ་འདིར་མི་བཞེས།',
+    opt_in_month: 'ཟླ་འདིར་བཞེས།',
+    skip_week: 'བདུན་འདིར་མི་བཞེས།',
+    join_week: 'བདུན་འདིར་བཞེས།',
+    legend_joining: 'མཉམ་ཞུགས།',
+    legend_skipped: 'མི་བཞེས།',
     chef_broadcast_info: 'ཆུ་ཚོད་ {time} • མ་ཆེན་ {name}',
     shahi_paneer_rice: 'ཤ་ཧི་པ་ནིར་དང་ཟི་ར་འབྲས།',
     shahi_paneer_desc: 'རྒྱ་གར་བྱང་ཕྱོགས་ཀྱི་སྤྲི་དཀར་བྱུག་པའི་ཚོད་མ་དང་། ཞིམ་མངར་བསུང་ལྡན་འབྲས་སིལ། ཀུ་ཀུམ་གྲང་ཚལ་བཅས།',
@@ -428,6 +452,10 @@ const translations = {
     mark_unpaid: 'མ་སྤྲད་པར་འཇོག་པ།',
     mark_paid: 'སྤྲད་ཟིན་པར་འཇོག་པ།',
     no_matching_users: 'མཐུན་པའི་ལས་བཟོ་བ་མི་འདུག',
+    clear_billing: 'རྩིས་ཐོ་གསལ་བ།',
+    clear_billing_confirm: 'ཁྱེད་རང་ཟླ་རེའི་རྩིས་ཐོ་འདི་གསལ་བར་གཏན་འཁེལ་ཡིན་པས། འདིས་ཟླ་འདིའི་རྩིས་ཐོ་དང་ལས་བཟོའི་རྩིས་ཐོའི་གནས་ཚུལ་ཡོངས་རྫོགས་སུབ་ངེས། བྱ་གཞག་འདི་ཕྱིར་འཐེན་བྱེད་མི་ཐུབ།',
+    clear_billing_success: 'ཟླ་རེའི་རྩིས་ཐོ་ལམ་ལྷོང་ངང་གསལ་ཟིན།',
+    clearing_bill: 'རྩིས་ཐོ་གསལ་བཞིན་པ།...',
     page_indicator: 'ཤོག་ལྷེ {page} ནས {totalPages} བར། (ལས་བཟོ {count})',
 
     // Dish Name Mappings
@@ -494,8 +522,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // Load language from localStorage client-side
   useEffect(() => {
     const saved = localStorage.getItem('mealbuddy_lang');
-    if (saved === 'en' || saved === 'bo') {
-      setLanguageState(saved);
+    if ((saved === 'en' || saved === 'bo') && saved !== 'en') {
+      setTimeout(() => setLanguageState(saved), 0);
     }
   }, []);
 
