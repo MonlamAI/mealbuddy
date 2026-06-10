@@ -27,6 +27,12 @@ class MonthlyBillPolicy
         return $this->isAccountantOrAdmin($user);
     }
 
+    public function delete(User $user, MonthlyBill $monthlyBill): bool
+    {
+        return $this->isAccountantOrAdmin($user);
+    }
+
+
     private function isAccountantOrAdmin(User $user): bool
     {
         return in_array($user->role, ['accountant', 'admin', 'super_admin'], true);

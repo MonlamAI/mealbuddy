@@ -20,8 +20,7 @@ class OrdersRelationManager extends RelationManager
 
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn ($state) =>
-                        $state === 'opted_in' ? 'success' : 'danger'
+                    ->color(fn ($state) => $state === 'opted_in' ? 'success' : 'danger'
                     ),
 
                 TextColumn::make('created_at')

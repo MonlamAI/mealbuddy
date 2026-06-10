@@ -47,25 +47,25 @@ export default function ActivityHistoryPage() {
     }, [router]);
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans">
+        <div className="min-h-screen bg-background text-foreground font-sans">
             <Header />
             <div className="max-w-4xl mx-auto px-4 pt-28 pb-20">
                 <button 
                     onClick={() => router.push('/user_dashboard')}
-                    className="flex items-center gap-2 text-slate-500 hover:text-blue-600 font-medium mb-8 transition-colors"
+                    className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium mb-8 transition-colors cursor-pointer"
                 >
                     <ArrowLeft size={20} />
                     Back to Dashboard
                 </button>
 
-                <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 p-8 md:p-12">
+                <div className="bg-card rounded-[2rem] shadow-sm border border-border p-8 md:p-12 text-foreground">
                     <div className="flex items-center gap-4 mb-8">
-                        <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                        <div className="w-14 h-14 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center">
                             <History size={28} />
                         </div>
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Activity History</h1>
-                            <p className="text-slate-500">A complete record of your meal participations</p>
+                            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-[#F5F5F5]">Activity History</h1>
+                            <p className="text-slate-500 dark:text-slate-400">A complete record of your meal participations</p>
                         </div>
                     </div>
 
@@ -82,23 +82,23 @@ export default function ActivityHistoryPage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.05 }}
                                     key={activity.id} 
-                                    className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-2xl border border-slate-100 hover:border-blue-100 hover:shadow-md hover:shadow-blue-500/5 transition-all bg-slate-50/50"
+                                    className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-2xl border border-slate-100 dark:border-[#323232] hover:border-blue-100 dark:hover:border-border hover:shadow-md hover:shadow-blue-500/5 transition-all bg-slate-50/50 dark:bg-[#202020]/30"
                                 >
                                     <div className="flex items-center gap-5 mb-4 sm:mb-0">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${activity.status === 'opted_in' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${activity.status === 'opted_in' ? 'bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600' : 'bg-rose-100 dark:bg-rose-950/30 text-rose-600'}`}>
                                             {activity.status === 'opted_in' ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
                                         </div>
                                         <div>
-                                            <p className="text-lg font-bold text-slate-800">
+                                            <p className="text-lg font-bold text-slate-800 dark:text-[#F5F5F5]">
                                                 {activity.status === 'opted_in' ? 'Joined Lunch' : 'Skipped Lunch'}
                                             </p>
-                                            <p className="text-sm font-medium text-slate-500 flex items-center gap-1.5 mt-1">
+                                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-1">
                                                 <Utensils size={14} />
                                                 {activity.lunch_day?.menu?.title || 'Unknown Menu'}
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 text-slate-500 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm w-fit">
+                                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-300 bg-white dark:bg-[#202020] px-4 py-2 rounded-xl border border-slate-200 dark:border-[#323232] shadow-sm w-fit">
                                         <Calendar size={16} className="text-blue-500" />
                                         <span className="text-sm font-bold">
                                             {new Date(activity.lunch_day.lunch_date).toLocaleDateString('en-US', { 
@@ -113,10 +113,10 @@ export default function ActivityHistoryPage() {
                             ))}
                         </div>
                     ) : (
-                        <div className="py-20 text-center border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50">
+                        <div className="py-20 text-center border-2 border-dashed border-slate-200 dark:border-[#323232] rounded-3xl bg-slate-50 dark:bg-[#202020]/25">
                             <History size={48} className="mx-auto text-slate-300 mb-4" />
-                            <h3 className="text-xl font-bold text-slate-700 mb-2">No History Found</h3>
-                            <p className="text-slate-500">You haven't participated in any meals yet.</p>
+                            <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">No History Found</h3>
+                            <p className="text-slate-500 dark:text-slate-400">You haven't participated in any meals yet.</p>
                         </div>
                     )}
                 </div>

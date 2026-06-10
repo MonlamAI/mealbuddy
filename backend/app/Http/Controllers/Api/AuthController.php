@@ -18,7 +18,7 @@ class AuthController extends Controller
         $passwordRules = $this->passwordRules();
         // Remove 'confirmed' if it's not provided in the request
         if (! $request->has('password_confirmation')) {
-            $passwordRules = array_filter($passwordRules, fn($rule) => $rule !== 'confirmed');
+            $passwordRules = array_filter($passwordRules, fn ($rule) => $rule !== 'confirmed');
         }
 
         $request->validate([

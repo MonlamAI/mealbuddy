@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -103,5 +104,15 @@ class User extends Authenticatable
     public function isSuperAdmin(): bool
     {
         return $this->role === 'super_admin';
+    }
+
+    public function getEffectiveLunchStartDate(): string
+    {
+        $createdAt = Carbon::parse($this->created_at);
+        if ($createdAt->hour >= 10) {
+            return $createdAt->addDay()->toDateString();
+        }
+
+        return $createdAt->toDateString();
     }
 }

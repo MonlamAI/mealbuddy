@@ -9,28 +9,28 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 
 class MonthlyBillingService
 {
     public function countJoinedPlatesByUser(int $month, int $year): Collection
     {
-        // Get all lunch days in the specified month with their dates
+        $today = now()->toDateString();
+
+        // Get all lunch days in the specified month with their dates on or before today
         $lunchDays = DB::table('lunch_days')
             ->whereMonth('lunch_date', $month)
             ->whereYear('lunch_date', $year)
+            ->where('lunch_date', '<=', $today)
             ->get(['id', 'lunch_date']);
 
         $lunchDayIds = $lunchDays->pluck('id');
 
-        // Get the count of opted_out orders for each active user
-        $optedOutCounts = DB::table('lunch_orders')
+        // Get all opted_out orders for each active user in the specified month
+        $optedOutOrders = DB::table('lunch_orders')
             ->whereIn('lunch_day_id', $lunchDayIds)
             ->where('status', 'opted_out')
-            ->select('user_id', DB::raw('COUNT(*) as opted_out_count'))
-            ->groupBy('user_id')
             ->get()
-            ->keyBy('user_id');
+            ->groupBy('user_id');
 
         $activeUsers = User::where('is_active', true)
             ->whereIn('role', ['employee', 'chef', 'accountant'])
@@ -38,19 +38,24 @@ class MonthlyBillingService
 
         $results = collect();
         foreach ($activeUsers as $user) {
-            $userRegisterDate = Carbon::parse($user->created_at)->toDateString();
-            
-            // Filter lunch days in the month that are on or after the user's registration date
-            $userLunchDaysCount = $lunchDays->filter(function ($day) use ($userRegisterDate) {
-                return $day->lunch_date >= $userRegisterDate;
-            })->count();
+            $userRegisterDate = $user->getEffectiveLunchStartDate();
 
-            $optedOutCount = $optedOutCounts->get($user->id)?->opted_out_count ?? 0;
+            // Filter lunch days in the month that are on or after the user's registration date
+            $userLunchDays = $lunchDays->filter(function ($day) use ($userRegisterDate) {
+                return $day->lunch_date >= $userRegisterDate;
+            });
+            $userLunchDaysCount = $userLunchDays->count();
+
+            $userEligibleDayIds = $userLunchDays->pluck('id');
+            $optedOutCount = $optedOutOrders->get($user->id)
+                ?->filter(fn ($order) => $userEligibleDayIds->contains($order->lunch_day_id))
+                ?->count() ?? 0;
+
             $joinedCount = max(0, $userLunchDaysCount - $optedOutCount);
-            
-            $results->push((object)[
+
+            $results->push((object) [
                 'user_id' => $user->id,
-                'joined_count' => $joinedCount
+                'joined_count' => $joinedCount,
             ]);
         }
 
@@ -157,6 +162,17 @@ class MonthlyBillingService
             ]);
         });
     }
+
+    public function deleteMonthlyBill(MonthlyBill $monthlyBill): void
+    {
+        DB::transaction(function () use ($monthlyBill) {
+            if ($monthlyBill->bill_image) {
+                $this->deleteBillImage($monthlyBill->bill_image);
+            }
+            $monthlyBill->delete();
+        });
+    }
+
 
     public function paymentStatistics(MonthlyBill $monthlyBill): array
     {

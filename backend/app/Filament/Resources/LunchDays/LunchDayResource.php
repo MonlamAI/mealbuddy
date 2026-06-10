@@ -6,14 +6,13 @@ use App\Filament\Resources\LunchDays\Pages\CreateLunchDay;
 use App\Filament\Resources\LunchDays\Pages\EditLunchDay;
 use App\Filament\Resources\LunchDays\Pages\ListLunchDays;
 use App\Filament\Resources\LunchDays\Schemas\LunchDayForm;
-use App\Filament\Resources\LunchDays\Tables\LunchDaysTable;
 use App\Models\LunchDay;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class LunchDayResource extends Resource
 {
@@ -28,7 +27,6 @@ class LunchDayResource extends Resource
         return LunchDayForm::configure($schema);
     }
 
-
     public static function table(Table $table): Table
     {
         return $table
@@ -36,14 +34,14 @@ class LunchDayResource extends Resource
                 TextColumn::make('lunch_date')
                     ->date()
                     ->sortable(),
-    
+
                 TextColumn::make('menu.title')
                     ->label('Meal'),
-    
+
                 TextColumn::make('orders_count')
                     ->counts('orders')
                     ->label('Total Votes'),
-    
+
                 TextColumn::make('opted_in_orders_count')
                     ->counts('optedInOrders')
                     ->label('Eating Count')

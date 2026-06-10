@@ -158,3 +158,85 @@ it('rejects bill creation when no joined plates exist', function () {
         ->assertUnprocessable()
         ->assertJsonPath('message', 'No joined lunch plates found for this month.');
 });
+
+it('excludes future lunch days from monthly billing calculations', function () {
+    // Current date is June 9, 2026
+    Carbon\Carbon::setTestNow(Carbon\Carbon::parse('2026-06-09 12:00:00'));
+
+    // Create a past lunch day (today) and a future lunch day (tomorrow)
+    $menu = WeeklyMenu::firstOrCreate(['weekday' => 'tue'], ['title' => 'Tuesday Taco']);
+    $todayDay = LunchDay::create(['lunch_date' => '2026-06-09', 'weekly_menu_id' => $menu->id]);
+    $tomorrowDay = LunchDay::create(['lunch_date' => '2026-06-10', 'weekly_menu_id' => $menu->id]);
+
+    // Employee opted in for both days, otherEmployee opted out for today to ensure exactly 1 plate for today in the month
+    LunchOrder::create(['lunch_day_id' => $todayDay->id, 'user_id' => $this->employee->id, 'status' => 'opted_in']);
+    LunchOrder::create(['lunch_day_id' => $tomorrowDay->id, 'user_id' => $this->employee->id, 'status' => 'opted_in']);
+    LunchOrder::create(['lunch_day_id' => $todayDay->id, 'user_id' => $this->otherEmployee->id, 'status' => 'opted_out']);
+
+    $service = app(MonthlyBillingService::class);
+    $bill = $service->createMonthlyBill(
+        month: 6,
+        year: 2026,
+        totalBill: 1000,
+        uploadedBy: $this->accountant->id
+    );
+
+    // Only today's plate should be counted (1 plate total), tomorrow is excluded.
+    expect($bill->total_plates)->toBe(1)
+        ->and((float) $bill->plate_cost)->toBe(1000.0);
+
+    Carbon\Carbon::setTestNow();
+});
+
+it('allows accountants to delete monthly bills and removes corresponding records and files', function () {
+    $service = app(MonthlyBillingService::class);
+    
+    // Create a bill with a fake file
+    $file = UploadedFile::fake()->image('bill.jpg');
+    $bill = $service->createMonthlyBill(
+        month: 4,
+        year: 2026,
+        totalBill: 18000,
+        uploadedBy: $this->accountant->id,
+        billImage: $file,
+    );
+
+    $imagePath = $bill->bill_image;
+    Storage::disk('bills')->assertExists($imagePath);
+    expect(MonthlyBill::count())->toBe(1);
+    expect(\App\Models\UserMonthlyBill::count())->toBe(2);
+
+    $response = $this->actingAs($this->accountant, 'sanctum')
+        ->deleteJson("/api/v1/monthly-bills/{$bill->id}");
+
+    $response->assertOk()
+        ->assertJsonPath('message', 'Monthly bill deleted successfully.');
+
+    expect(MonthlyBill::count())->toBe(0);
+    expect(\App\Models\UserMonthlyBill::count())->toBe(0);
+    Storage::disk('bills')->assertMissing($imagePath);
+});
+
+it('prevents employees and chefs from deleting monthly bills', function () {
+    $service = app(MonthlyBillingService::class);
+    $bill = $service->createMonthlyBill(
+        month: 4,
+        year: 2026,
+        totalBill: 18000,
+        uploadedBy: $this->accountant->id,
+    );
+
+    // Try as employee
+    $this->actingAs($this->employee, 'sanctum')
+        ->deleteJson("/api/v1/monthly-bills/{$bill->id}")
+        ->assertForbidden();
+
+    // Try as chef
+    $chef = User::factory()->create(['role' => 'chef']);
+    $this->actingAs($chef, 'sanctum')
+        ->deleteJson("/api/v1/monthly-bills/{$bill->id}")
+        ->assertForbidden();
+
+    expect(MonthlyBill::count())->toBe(1);
+});
+
