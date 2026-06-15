@@ -8,6 +8,7 @@ use App\Policies\MonthlyBillPolicy;
 use App\Policies\UserMonthlyBillPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -20,7 +21,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+         if (app()->environment('production')) {
+             URL::forceScheme('https');
+         }
+
+         $this->configureDefaults();
     }
 
     /**

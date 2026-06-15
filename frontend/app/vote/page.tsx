@@ -42,7 +42,7 @@ export default function LunchVotePage() {
   const [lunchDayId, setLunchDayId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formattedDate, setFormattedDate] = useState("");
-
+  
   useEffect(() => {
     const getFormattedTodayDate = () => {
       const date = new Date();
@@ -396,12 +396,18 @@ export default function LunchVotePage() {
             <div className="bg-card rounded-2xl sm:rounded-[2rem] border border-border shadow-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-gray-200/50">
               <div className="aspect-[16/9] relative overflow-hidden">
                 <img
-                  src={todayMeal?.image || DAILY_MENU.image}
-                  alt="Lunch"
+                  src={(todayMeal?.image || DAILY_MENU.image)}
+                  alt={todayMeal?.title || DAILY_MENU.dishName}
                   className="w-full h-full object-cover"
+
                 />
                 <div className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-white/90 dark:bg-[#202020]/90 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-sm border border-white/50 dark:border-[#323232]">
                   <span className="text-[10px] sm:text-xs font-bold text-[#2E5A88] dark:text-[#D7E8F4] uppercase tracking-widest">{t('todays_special')}</span>
+
+                 />
+                <div className="absolute top-6 left-6 bg-white/90 dark:bg-[#202020]/90 backdrop-blur-md px-4 py-2 rounded-full shadow-sm border border-white/50 dark:border-[#323232]">
+                  <span className="text-xs font-bold text-[#2E5A88] dark:text-[#D7E8F4] uppercase tracking-widest">{t('todays_special')}</span>
+                (changes in the EC2 compatibility)
                 </div>
               </div>
 
