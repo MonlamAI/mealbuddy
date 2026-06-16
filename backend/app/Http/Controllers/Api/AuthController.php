@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
+use Illuminate\Support\Facades\Storage;
+
 class AuthController extends Controller
 {
     use PasswordValidationRules;
@@ -81,5 +83,41 @@ class AuthController extends Controller
     public function user(Request $request)
     {
         return response()->json($request->user());
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'name_bo' => 'nullable|string|max:255',
+            'nickname' => 'nullable|string|max:255',
+            'nickname_bo' => 'nullable|string|max:255',
+            'avatar' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
+        ]);
+
+        $updates = [
+            'name' => $request->name,
+            'name_bo' => $request->name_bo,
+            'nickname' => $request->nickname,
+            'nickname_bo' => $request->nickname_bo,
+        ];
+
+        if ($request->hasFile('avatar')) {
+            $oldAvatar = $user->avatar;
+            if ($oldAvatar && ! str_starts_with($oldAvatar, 'http') && ! str_starts_with($oldAvatar, 'data:')) {
+                Storage::disk('public')->delete($oldAvatar);
+            }
+
+            $updates['avatar'] = $request->file('avatar')->store('avatars', 'public');
+        }
+
+        $user->update($updates);
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => $user->fresh(),
+        ]);
     }
 }

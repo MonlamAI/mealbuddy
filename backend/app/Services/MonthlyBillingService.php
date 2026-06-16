@@ -158,7 +158,7 @@ class MonthlyBillingService
 
             return $monthlyBill->load([
                 'uploader:id,name,email',
-                'userBills.user:id,name,email,department',
+                'userBills.user:id,name,name_bo,nickname,nickname_bo,email,department',
             ]);
         });
     }
@@ -202,6 +202,6 @@ class MonthlyBillingService
             'paid_at' => $paymentStatus === 'paid' ? now() : null,
         ]);
 
-        return $userBill->fresh(['user:id,name,email,department']);
+        return $userBill->fresh(['user:id,name,name_bo,nickname,nickname_bo,email,department']);
     }
 }

@@ -108,7 +108,14 @@ export default function ChefDashboard() {
     const router = useRouter();
     const { showToast } = useToast();
     const { t } = useLanguage();
-    const [user, setUser] = useState<{ name: string } | null>(null);
+    const [user, setUser] = useState<{
+        name: string;
+        role?: string;
+        name_bo?: string;
+        nickname?: string;
+        nickname_bo?: string;
+        avatar_url?: string;
+    } | null>(null);
     const [data, setData] = useState<DashboardData | null>(null);
     const [chartData, setChartData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -342,64 +349,61 @@ export default function ChefDashboard() {
 
 
 
-            <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
+            <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16">
 
                 {/* Hero Section */}
-                <section className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <section className="mb-6 sm:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6 }}
                     >
-                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-3">
-                            {t('chef_greeting')} <span className="inline-block animate-bounce"></span>
-                        </h1>
 
                     </motion.div>
 
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white dark:bg-card p-4 rounded-3xl border border-blue-100 dark:border-[#323232] shadow-xl shadow-blue-300/20 flex items-center gap-4"
+                        className="w-full md:w-auto bg-white dark:bg-card p-4 rounded-3xl border border-blue-100 dark:border-[#323232] shadow-xl shadow-blue-300/20 flex items-center gap-4"
                     >
-                        <div className="w-12 h-12 bg-blue-50 dark:bg-[#202020] rounded-2xl flex items-center justify-center text-blue-600 overflow-hidden">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 dark:bg-[#202020] rounded-2xl flex items-center justify-center text-blue-600 overflow-hidden shrink-0">
                             {todayMeal.image ? (
                                 <img src={todayMeal.image} className="w-full h-full object-cover" />
                             ) : (
-                                <Utensils size={24} />
+                                <Utensils size={20} className="sm:w-6 sm:h-6" />
                             )}
                         </div>
                         <div>
-                            <p className="text-xs font-semibold uppercase tracking-wider text-blue-500">{t('todays_special')}</p>
-                            <p className="text-lg font-bold text-slate-800 dark:text-[#F5F5F5]">{t(todayMeal.title || '')}</p>
+                            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-blue-500">{t('todays_special')}</p>
+                            <p className="text-base sm:text-lg font-bold text-slate-800 dark:text-[#F5F5F5]">{t(todayMeal.title || '')}</p>
                         </div>
                     </motion.div>
                 </section>
 
                 {/* Stats Grid */}
-                <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <section className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-12 ">
                     <StatCard
                         label={t('total_employees')}
                         value={data?.totalEmployees || 0}
-                        icon={<Users className="text-blue-600 dark:text-blue-400" />}
+                        icon={<Users className="text-blue-600 dark:text-blue-400" size={20} />}
                         delay={0.1}
                     />
                     <StatCard
                         label={t('joined_lunch')}
                         value={data?.joined || 0}
-                        icon={<CheckCircle2 className="text-emerald-600 dark:text-emerald-400" />}
+                        icon={<CheckCircle2 className="text-emerald-600 dark:text-emerald-400" size={20} />}
                         delay={0.2}
                     />
                     <StatCard
                         label={t('skipped_lunch')}
                         value={data?.skipped || 0}
-                        icon={<XCircle className="text-rose-600 dark:text-rose-400" />}
+                        icon={<XCircle className="text-rose-600 dark:text-rose-400" size={20} />}
                         delay={0.3}
                     />
                     <StatCard
                         label={t('participation_rate')}
                         value={`${Math.round(((data?.joined || 0) / (data?.totalEmployees || 1)) * 100)}%`}
-                        icon={<TrendingUp className="text-amber-600 dark:text-amber-400" />}
+                        icon={<TrendingUp className="text-amber-600 dark:text-amber-400" size={20} />}
                         delay={0.4}
                     />
                 </section>
@@ -408,10 +412,10 @@ export default function ChefDashboard() {
 
                     {/* Main List Section */}
                     <div className="lg:col-span-2 space-y-8">
-                        <GlassCard className="p-8">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-                                <h3 className="text-xl font-bold">{t('participation_details')}</h3>
-                                <div className="flex flex-wrap items-center gap-2 bg-slate-50 dark:bg-[#202020] p-1 rounded-2xl border border-slate-100 dark:border-[#323232]">
+                        <GlassCard className="p-4 sm:p-8">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+                                <h3 className="text-lg sm:text-xl font-bold">{t('participation_details')}</h3>
+                                <div className="flex flex-wrap items-center gap-1.5 bg-slate-50 dark:bg-[#202020] p-1 rounded-2xl border border-slate-100 dark:border-[#323232] w-full sm:w-auto">
                                     {['all', 'joining', 'skipped', 'no_response'].map((f) => {
                                         const getFilterLabel = (filterVal: string) => {
                                             if (filterVal === 'all') return t('all_filter');
@@ -424,7 +428,7 @@ export default function ChefDashboard() {
                                             <button
                                                 key={f}
                                                 onClick={() => setActiveFilter(f as any)}
-                                                className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-all cursor-pointer ${activeFilter === f ? 'bg-white dark:bg-[#272727] text-blue-600 dark:text-[#D7E8F4] shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-[#F5F5F5]'
+                                                className={`flex-1 sm:flex-none text-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-medium capitalize transition-all cursor-pointer ${activeFilter === f ? 'bg-white dark:bg-[#272727] text-blue-600 dark:text-[#D7E8F4] shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-[#F5F5F5]'
                                                     }`}
                                             >
                                                 {getFilterLabel(f)}
@@ -459,7 +463,7 @@ export default function ChefDashboard() {
                         </GlassCard>
 
                         {/* Chef Personal Section (Dashboard Summary) */}
-                        <GlassCard className="p-8 md:p-10">
+                        <GlassCard className="p-4 sm:p-8 md:p-10">
                             <h2 className="text-xl font-bold text-slate-800 dark:text-[#F5F5F5] mb-6">{t('dashboard_summary')}</h2>
 
                             <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
@@ -718,15 +722,15 @@ function StatCard({ label, value, icon, delay, trend }: any) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay }}
         >
-            <GlassCard className="p-6 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 dark:bg-[#202020] rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
+            <GlassCard className="p-4 sm:p-6 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-20 h-20 sm:w-24 sm:h-24 bg-slate-50 dark:bg-[#202020] rounded-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
                 <div className="relative z-10">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-[#202020] flex items-center justify-center mb-4 border border-slate-100 dark:border-[#323232] group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-[#202020] flex items-center justify-center mb-3 sm:mb-4 border border-slate-100 dark:border-[#323232] group-hover:scale-110 transition-transform">
                         {icon}
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">{label}</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium mb-1.5 leading-relaxed py-0.5">{label}</p>
                     <div className="flex items-baseline gap-2">
-                        <h4 className="text-3xl font-bold text-slate-900 dark:text-[#F5F5F5] tracking-tight">{value}</h4>
+                        <h4 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-[#F5F5F5] tracking-tight leading-relaxed py-1">{value}</h4>
                     </div>
                     {trend && (
                         <p className="text-[10px] font-bold text-emerald-500 mt-2 uppercase tracking-wider">{trend}</p>
@@ -747,24 +751,22 @@ function EmployeeRow({ employee }: { employee: Employee }) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="group flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-[#202020] border border-transparent hover:border-slate-100 dark:hover:border-[#323232] transition-all"
+            className="group flex items-center justify-between p-3 sm:p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-[#202020] border border-transparent hover:border-slate-100 dark:hover:border-[#323232] transition-all"
         >
-            <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-[#202020] text-blue-600 dark:text-[#D7E8F4] flex items-center justify-center font-bold text-sm border border-blue-100 dark:border-[#323232]">
+            <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-50 dark:bg-[#202020] text-blue-600 dark:text-[#D7E8F4] flex items-center justify-center font-bold text-xs sm:text-sm border border-blue-100 dark:border-[#323232] shrink-0">
                     {initials}
                 </div>
                 <div>
-                    <p className="font-bold text-slate-800 dark:text-[#F5F5F5] group-hover:text-blue-600 transition-colors">{employee.name}</p>
-                    <p className="text-xs text-slate-400 dark:text-slate-400">{employee.department}</p>
+                    <p className="font-bold text-sm sm:text-base text-slate-800 dark:text-[#F5F5F5] group-hover:text-blue-600 transition-colors">{employee.name}</p>
+                    {employee.department && employee.department.toLowerCase() !== 'general' && (
+                        <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-400">{employee.department}</p>
+                    )}
                 </div>
             </div>
 
             <div className="flex flex-col items-end gap-1">
                 <Badge status={employee.status} />
-                <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                    <Clock size={10} />
-                    {t('voted_at', { time: employee.votedAt })}
-                </span>
             </div>
         </motion.div>
     );
@@ -781,7 +783,7 @@ function EmptyState() {
             <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
                 <Users className="text-slate-300" size={32} />
             </div>
-            <h4 className="text-lg font-bold text-slate-800">{t('no_responses_yet')}</h4>
+            <h4 className="text-lg font-bold text-slate-500">{t('no_responses_yet')}</h4>
             <p className="text-slate-500 max-w-xs text-sm">{t('no_responses_desc')}</p>
         </motion.div>
     );
@@ -790,7 +792,7 @@ function EmptyState() {
 function LoadingState() {
     const { t } = useLanguage();
     return (
-        <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6">
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
             <motion.div
                 animate={{
                     rotate: 360,

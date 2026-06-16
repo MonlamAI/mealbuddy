@@ -9,7 +9,8 @@ import {
     LogOut,
     User,
     Menu,
-    X
+    X,
+    Settings
 } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,7 +26,7 @@ interface HeaderProps {
 export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
 
     const [currentUser, setCurrentUser] = useState<any>(user || null);
     const [broadcasts, setBroadcasts] = useState<any[]>([]);
@@ -253,16 +254,31 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
                     {currentUser ? (
                         <div className="flex items-center gap-3">
                             <div className="text-right cursor-pointer" onClick={handleProfileClick}>
-                                <p className="text-sm font-bold text-slate-800 dark:text-[#F5F5F5] leading-none">{currentUser.name}</p>
+                                <p className="text-sm font-bold text-slate-800 dark:text-[#F5F5F5] leading-none">
+                                    {language === 'bo' ? (currentUser.name_bo || currentUser.name) : currentUser.name}
+                                </p>
                                 <p className="inline-block text-[10px] bg-blue-50 dark:bg-[#272727]/50 text-blue-600 dark:text-[#D7E8F4] px-2 py-1 rounded-full font-bold uppercase mt-1 tracking-wider border border-blue-100 dark:border-[#323232]">
                                     {currentUser.role === 'chef'
                                         ? t('role_chef')
-                                        : (currentUser.role === 'accountant' ? t('role_accountant') : randomRole)}
+                                        : (currentUser.role === 'accountant'
+                                            ? t('role_accountant')
+                                            : (language === 'bo' ? (currentUser.nickname_bo || currentUser.nickname || randomRole) : (currentUser.nickname || randomRole)))}
                                 </p>
                             </div>
                             <div className="w-10 h-10 rounded-full bg-blue-50 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center cursor-pointer" onClick={handleProfileClick}>
-                                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name || 'Member'}`} alt="User" />
+                                <img 
+                                    src={currentUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name || 'Member'}`} 
+                                    alt="User" 
+                                    className="w-full h-full object-cover"
+                                />
                             </div>
+                            <button 
+                                onClick={() => router.push('/profile')} 
+                                className="p-2.5 text-slate-400 hover:text-blue-600 transition-colors" 
+                                title={t('profile_settings')}
+                            >
+                                <Settings size={20} />
+                            </button>
                             <button onClick={handleLogout} className="p-2.5 text-slate-400 hover:text-rose-500 transition-colors" title={t('logout')}>
                                 <LogOut size={20} />
                             </button>
@@ -405,6 +421,14 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
                                 >
                                     Home
                                 </button>
+                                {currentUser && (
+                                    <button
+                                        onClick={() => { router.push('/profile'); setIsSidebarOpen(false); }}
+                                        className="text-left text-[#1F2A44] hover:bg-slate-50 transition-colors py-2.5 px-3 rounded-xl text-base font-semibold"
+                                    >
+                                        {t('profile_settings')}
+                                    </button>
+                                )}
                             </nav>
 
                             {/* Options Area (Language & Theme selectors) */}
@@ -431,16 +455,18 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
                                                 handleProfileClick();
                                                 setIsSidebarOpen(false);
                                             }}
-                                        className="w-full bg-slate-50 dark:bg-[#202020] border border-slate-100 dark:border-[#323232] text-slate-800 dark:text-[#F5F5F5] cursor-pointer py-3 rounded-xl text-center hover:bg-slate-100 dark:hover:bg-[#272727] transition-colors flex items-center justify-center gap-3 font-bold text-sm"
-                                    >
-                                        <div className="w-7 h-7 rounded-full bg-blue-50 dark:bg-[#272727] border border-white dark:border-[#323232] overflow-hidden shrink-0 flex items-center justify-center">
+                                            className="w-full bg-slate-50 dark:bg-[#202020] border border-slate-100 dark:border-[#323232] text-slate-800 dark:text-[#F5F5F5] cursor-pointer py-3 rounded-xl text-center hover:bg-slate-100 dark:hover:bg-[#272727] transition-colors flex items-center justify-center gap-3 font-bold text-sm"
+                                        >
+                                            <div className="w-7 h-7 rounded-full bg-blue-50 dark:bg-[#272727] border border-white dark:border-[#323232] overflow-hidden shrink-0 flex items-center justify-center">
                                                 <img
-                                                    src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name || 'Member'}`}
+                                                    src={currentUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name || 'Member'}`}
                                                     alt="User Profile"
                                                     className="w-full h-full object-cover"
                                                 />
                                             </div>
-                                            <span className="truncate max-w-[150px]">{currentUser.name}</span>
+                                            <span className="truncate max-w-[150px]">
+                                                {language === 'bo' ? (currentUser.name_bo || currentUser.name) : currentUser.name}
+                                            </span>
                                         </button>
 
                                         <button

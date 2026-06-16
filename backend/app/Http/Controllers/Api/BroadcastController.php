@@ -15,7 +15,7 @@ class BroadcastController extends Controller
         $userId = $request->user()->id;
 
         // Get active broadcasts from the last 24 hours
-        $broadcasts = Broadcast::with('user:id,name,role')
+        $broadcasts = Broadcast::with('user:id,name,name_bo,nickname,nickname_bo,role')
             ->where('created_at', '>=', Carbon::now()->subHours(24))
             ->orderBy('created_at', 'desc')
             ->get();

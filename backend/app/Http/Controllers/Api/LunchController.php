@@ -429,6 +429,9 @@ class LunchController extends Controller
                 $employeeDetails[] = [
                     'id' => $emp->id,
                     'name' => $emp->name,
+                    'name_bo' => $emp->name_bo,
+                    'nickname' => $emp->nickname,
+                    'nickname_bo' => $emp->nickname_bo,
                     'department' => $emp->department ?? 'General',
                     'status' => $status,
                     'votedAt' => $votedAt,
@@ -448,6 +451,9 @@ class LunchController extends Controller
                 $employeeDetails[] = [
                     'id' => $emp->id,
                     'name' => $emp->name,
+                    'name_bo' => $emp->name_bo,
+                    'nickname' => $emp->nickname,
+                    'nickname_bo' => $emp->nickname_bo,
                     'department' => $emp->department ?? 'General',
                     'status' => $status,
                     'votedAt' => '--:--',
@@ -542,6 +548,9 @@ class LunchController extends Controller
                 $usersData[] = [
                     'id' => $user->id,
                     'name' => $user->name,
+                    'name_bo' => $user->name_bo,
+                    'nickname' => $user->nickname,
+                    'nickname_bo' => $user->nickname_bo,
                     'role' => $user->role,
                     'department' => $user->department ?? 'General',
                     'status' => $status,

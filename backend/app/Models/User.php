@@ -12,8 +12,13 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
+use Illuminate\Support\Facades\Storage;
+
 #[Fillable([
     'name',
+    'name_bo',
+    'nickname',
+    'nickname_bo',
     'email',
     'password',
     'role',
@@ -37,6 +42,21 @@ class User extends Authenticatable
         HasFactory,
         Notifiable,
         TwoFactorAuthenticatable;
+
+    protected $appends = ['avatar_url'];
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (! $this->avatar) {
+            return null;
+        }
+
+        if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://') || str_starts_with($this->avatar, 'data:')) {
+            return $this->avatar;
+        }
+
+        return Storage::disk('public')->url($this->avatar);
+    }
 
     /*
     |--------------------------------------------------------------------------

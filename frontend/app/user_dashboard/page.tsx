@@ -8,7 +8,8 @@ import {
     Utensils,
     History,
     ChevronRight,
-    TrendingUp
+    TrendingUp,
+    Settings
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -49,8 +50,16 @@ const GlassCard = ({ children, className = "" }: { children: React.ReactNode; cl
 export default function UserDashboard() {
     const { resolvedTheme } = useTheme();
     const router = useRouter();
-    const { t } = useLanguage();
-    const [user, setUser] = useState<{ name: string; email: string; role?: string } | null>(null);
+    const { t, language } = useLanguage();
+    const [user, setUser] = useState<{ 
+        name: string; 
+        email: string; 
+        role?: string; 
+        name_bo?: string; 
+        nickname?: string; 
+        nickname_bo?: string; 
+        avatar_url?: string; 
+    } | null>(null);
     const [loading, setLoading] = useState(true);
 
     // Real Stats
@@ -127,49 +136,54 @@ export default function UserDashboard() {
                 router.push('/');
             }} onNavigateHome={() => router.push('/')} />
 
-            <main className="relative z-10 max-w-6xl mx-auto px-4 pt-28 pb-20">
+            <main className="relative z-10 max-w-6xl mx-auto px-4 pt-28 pb-16">
 
                 {/* Welcome Section */}
-                <section className="mb-10">
+                <section className="mb-6 sm:mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-2">
-                            {t('greeting')}, {user?.name?.split(' ')[0] || 'Member'}
-                        </h1>
-                        <p className="text-slate-500 dark:text-slate-400">{t('user_dashboard_desc')}</p>
                     </motion.div>
+                    <motion.button
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        onClick={() => router.push('/profile')}
+                        className="px-4 py-2 bg-white/70 hover:bg-white dark:bg-[#1E1E1E]/40 border border-slate-200/60 dark:border-[#323232] rounded-2xl shadow-sm text-sm font-bold text-[#1F2A44] dark:text-[#F5F5F5] transition-all flex items-center justify-center gap-2 max-w-max self-start sm:self-auto cursor-pointer"
+                    >
+                        <Settings size={16} />
+                        <span>{t('profile_settings')}</span>
+                    </motion.button>
                 </section>
 
                 {/* Main Unified Dashboard Summary Card */}
-                <GlassCard className="p-8 md:p-10">
-                    <h2 className="text-xl font-bold text-slate-800 mb-6 dark:text-[#F5F5F5]">{t('dashboard_summary')}</h2>
+                <GlassCard className="p-4 sm:p-8 md:p-10">
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-800 mb-6 dark:text-[#F5F5F5]">{t('dashboard_summary')}</h2>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         {/* LEFT COLUMN - Stats Cards & Monthly Summary */}
                         <div className="lg:col-span-7 flex flex-col gap-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-2 gap-4 sm:gap-6">
                                 {/* Total Meals Eaten */}
-                                <div className="p-6 bg-white dark:bg-[#202020] border border-slate-100 dark:border-[#323232] rounded-3xl shadow-sm flex flex-col">
-                                    <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-500 flex items-center justify-center mb-4">
-                                        <Utensils size={20} />
+                                <div className="p-4 sm:p-6 bg-white dark:bg-[#202020] border border-slate-100 dark:border-[#323232] rounded-2xl sm:rounded-3xl shadow-sm flex flex-col">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-500 flex items-center justify-center mb-3 sm:mb-4 shrink-0">
+                                        <Utensils size={18} className="sm:w-5 sm:h-5" />
                                     </div>
-                                    <h4 className="text-3xl font-black text-slate-900 dark:text-[#F5F5F5] mb-1">{stats.totalLunchEaten}</h4>
-                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-300">{t('total_meals_eaten')}</p>
-                                    <p className="text-xs text-slate-400 dark:text-slate-400 mt-1">{t('since_joined')}</p>
+                                    <h4 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-[#F5F5F5] mb-1">{stats.totalLunchEaten}</h4>
+                                    <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-300 truncate">{t('total_meals_eaten')}</p>
+                                    <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-400 mt-1 truncate">{t('since_joined')}</p>
                                 </div>
 
                                 {/* Current Month */}
-                                <div className="p-6 bg-white dark:bg-[#202020] border border-slate-100 dark:border-[#323232] rounded-3xl shadow-sm flex flex-col">
-                                    <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/30 text-blue-500 flex items-center justify-center mb-4">
-                                        <Calendar size={20} />
+                                <div className="p-4 sm:p-6 bg-white dark:bg-[#202020] border border-slate-100 dark:border-[#323232] rounded-2xl sm:rounded-3xl shadow-sm flex flex-col">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-50 dark:bg-blue-950/30 text-blue-500 flex items-center justify-center mb-3 sm:mb-4 shrink-0">
+                                        <Calendar size={18} className="sm:w-5 sm:h-5" />
                                     </div>
-                                    <h4 className="text-3xl font-black text-slate-900 dark:text-[#F5F5F5] mb-1">{stats.joinedThisMonth + stats.skippedThisMonth}</h4>
-                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-300">{t('current_month')}</p>
-                                    <p className="text-xs text-slate-400 dark:text-slate-400 mt-1">{t('days_tracked')}</p>
+                                    <h4 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-[#F5F5F5] mb-1">{stats.joinedThisMonth + stats.skippedThisMonth}</h4>
+                                    <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-300 truncate">{t('current_month')}</p>
+                                    <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-400 mt-1 truncate">{t('days_tracked')}</p>
                                 </div>
                             </div>
 
                             {/* Monthly Summary */}
-                            <div className="p-6 bg-white dark:bg-[#202020] border border-slate-100 dark:border-[#323232] rounded-3xl shadow-sm flex-1 flex flex-col justify-between min-h-[320px]">
+                            <div className="p-4 sm:p-6 bg-white dark:bg-[#202020] border border-slate-100 dark:border-[#323232] rounded-3xl shadow-sm flex-1 flex flex-col justify-between min-h-[320px]">
                                 <h3 className="text-lg font-bold text-slate-800 dark:text-[#F5F5F5] flex items-center gap-2 mb-4">
                                     <TrendingUp size={20} className="text-blue-600" />
                                     {t('monthly_summary')}
@@ -219,7 +233,7 @@ export default function UserDashboard() {
                         {/* RIGHT COLUMN - Recent Activity & Billing Button */}
                         <div className="lg:col-span-5 flex flex-col justify-between gap-6">
                             {/* Recent Activity */}
-                            <div className="p-6 bg-white dark:bg-[#202020] border border-slate-100 dark:border-[#323232] rounded-3xl shadow-sm flex-1 flex flex-col min-h-[350px]">
+                            <div className="p-4 sm:p-6 bg-white dark:bg-[#202020] border border-slate-100 dark:border-[#323232] rounded-3xl shadow-sm flex-1 flex flex-col min-h-[350px]">
                                 <div className="flex justify-between items-center mb-6">
                                     <h3 className="font-bold flex items-center gap-2 text-slate-800 dark:text-[#F5F5F5] text-lg">
                                         <History size={18} className="text-slate-500" />

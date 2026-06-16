@@ -155,9 +155,9 @@ export default function AuthPage() {
       </div>
 
       {/* --- RIGHT SIDE: AUTHENTICATION FORM --- */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 lg:p-20 relative dark:bg-[#323232s]">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 lg:p-20 relative dark:bg-[#323232s]">
         {/* Floating Language & Theme Switchers in Auth Panel */}
-        <div className="absolute top-8 right-8 z-[60] flex items-center gap-3">
+        <div className="absolute top-4 right-4 sm:top-8 sm:right-8 z-[60] flex items-center gap-3">
           <LanguageSwitcher />
           <ThemeSwitcher />
         </div>
@@ -170,7 +170,7 @@ export default function AuthPage() {
           {/* Back Button */}
           <button
             onClick={() => router.push('/')}
-            className="group mb-12 flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-[#2E5A88] transition-all"
+            className="group mb-6 sm:mb-12 flex items-center gap-2 text-sm font-bold text-gray-400 hover:text-[#2E5A88] transition-all"
           >
             <div className="p-2 rounded-full group-hover:bg-[#2E5A88]/10 transition-colors">
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
@@ -179,11 +179,11 @@ export default function AuthPage() {
           </button>
 
           {/* Header */}
-          <div className="mb-10">
-            <h1 className="text-4xl font-extrabold tracking-tight text-foreground mb-3">
+          <div className="mb-6 sm:mb-10">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-foreground mb-2 sm:mb-3">
               {activeTab === "login" ? t('welcome_back') : t('get_started')}
             </h1>
-            <p className="text-lg text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
+            <p className="text-sm sm:text-base md:text-lg text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
               {activeTab === "login"
                 ? t('login_subtitle')
                 : t('signup_subtitle')}
@@ -198,13 +198,13 @@ export default function AuthPage() {
             <TabsList className="flex flex-row w-full h-auto mb-4 bg-gray-200/40 dark:bg-[#202020] p-2 rounded-full border border-gray-200 dark:border-[#323232] gap-2">
               <TabsTrigger
                 value="login"
-                className="w-full py-3 rounded-full font-bold text-base transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-[#272727] data-[state=active]:text-[#2E5A88] dark:data-[state=active]:text-[#D7E8F4] data-[state=active]:shadow-md cursor-pointer"
+                className="w-full py-2 sm:py-3 rounded-full font-bold text-sm sm:text-base transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-[#272727] data-[state=active]:text-[#2E5A88] dark:data-[state=active]:text-[#D7E8F4] data-[state=active]:shadow-md cursor-pointer"
               >
                 {t('sign_in')}
               </TabsTrigger>
               <TabsTrigger
                 value="signup"
-                className="w-full py-3 rounded-full font-bold text-base transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-[#272727] data-[state=active]:text-[#2E5A88] dark:data-[state=active]:text-[#D7E8F4] data-[state=active]:shadow-md cursor-pointer"
+                className="w-full py-2 sm:py-3 rounded-full font-bold text-sm sm:text-base transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-[#272727] data-[state=active]:text-[#2E5A88] dark:data-[state=active]:text-[#D7E8F4] data-[state=active]:shadow-md cursor-pointer"
               >
                 {t('sign_up')}
               </TabsTrigger>
@@ -239,7 +239,7 @@ export default function AuthPage() {
                         name="email"
                         type="email"
                         placeholder="name@company.com"
-                        className="pl-12 h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:bg-white dark:focus:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium text-foreground dark:text-[#F5F5F5]"
+                        className="pl-12 h-12 sm:h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:bg-white dark:focus:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-2xl sm:rounded-3xl transition-all text-base sm:text-lg font-medium text-foreground dark:text-[#F5F5F5]"
                         onChange={handleInputChange}
                       />
                     </div>
@@ -256,7 +256,7 @@ export default function AuthPage() {
                         name="password"
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
-                        className="pl-12 h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:bg-white dark:focus:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium text-foreground dark:text-[#F5F5F5]"
+                        className="pl-12 h-12 sm:h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:bg-white dark:focus:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-2xl sm:rounded-3xl transition-all text-base sm:text-lg font-medium text-foreground dark:text-[#F5F5F5]"
                         onChange={handleInputChange}
                       />
                       <button
@@ -270,7 +270,7 @@ export default function AuthPage() {
                   </div>
 
                   <Button
-                    className="w-full h-16 bg-[#2E5A88] hover:bg-[#1F2A44] text-white text-lg font-bold rounded-full transition-all shadow-xl shadow-[#2E5A88]/20 active:scale-[0.98]"
+                    className="w-full h-12 sm:h-16 bg-[#2E5A88] hover:bg-[#1F2A44] text-white text-base sm:text-lg font-bold rounded-full transition-all shadow-xl shadow-[#2E5A88]/20 active:scale-[0.98]"
                     onClick={() => handleSubmit("Login")}
                     disabled={loading}
                   >
@@ -292,7 +292,7 @@ export default function AuthPage() {
                       <Input
                         name="name"
                         placeholder="Tenzin"
-                        className="pl-12 h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium text-foreground dark:text-[#F5F5F5]"
+                        className="pl-12 h-12 sm:h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-2xl sm:rounded-3xl transition-all text-base sm:text-lg font-medium text-foreground dark:text-[#F5F5F5]"
                         onChange={handleInputChange}
                       />
                     </div>
@@ -306,7 +306,7 @@ export default function AuthPage() {
                         name="email"
                         type="email"
                         placeholder="john@company.com"
-                        className="pl-12 h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium text-foreground dark:text-[#F5F5F5]"
+                        className="pl-12 h-12 sm:h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-2xl sm:rounded-3xl transition-all text-base sm:text-lg font-medium text-foreground dark:text-[#F5F5F5]"
                         onChange={handleInputChange}
                       />
                     </div>
@@ -320,7 +320,7 @@ export default function AuthPage() {
                         name="password"
                         type={showPassword ? "text" : "password"}
                         placeholder="Min. 8 characters"
-                        className="pl-12 h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-3xl transition-all text-lg font-medium text-foreground dark:text-[#F5F5F5]"
+                        className="pl-12 h-12 sm:h-16 border-2 border-gray-100 dark:border-[#323232] bg-white dark:bg-[#272727] focus:ring-4 focus:ring-[#2E5A88]/5 focus:border-[#2E5A88] rounded-2xl sm:rounded-3xl transition-all text-base sm:text-lg font-medium text-foreground dark:text-[#F5F5F5]"
                         onChange={handleInputChange}
                       />
                       <button
@@ -334,7 +334,7 @@ export default function AuthPage() {
                   </div>
 
                   <Button
-                    className="w-full h-16 bg-[#2E5A88] hover:bg-[#1F2A44] text-white text-lg font-bold rounded-3xl transition-all shadow-xl shadow-[#2E5A88]/20 active:scale-[0.98]"
+                    className="w-full h-12 sm:h-16 bg-[#2E5A88] hover:bg-[#1F2A44] text-white text-base sm:text-lg font-bold rounded-2xl sm:rounded-3xl transition-all shadow-xl shadow-[#2E5A88]/20 active:scale-[0.98]"
                     onClick={() => handleSubmit("Signup")}
                     disabled={loading}
                   >
@@ -346,7 +346,7 @@ export default function AuthPage() {
           </Tabs>
 
 
-          <p className="mt-10 text-center text-sm font-medium text-gray-400">
+          <p className="mt-6 sm:mt-10 text-center text-xs sm:text-sm font-medium text-gray-400">
             {t('terms_info')}
           </p>
         </motion.div>
