@@ -11,7 +11,10 @@ export interface PaymentStatistics {
 export interface UserBillUser {
   id: number;
   name: string;
+  name_bo?: string | null;
   email: string;
+  nickname?: string | null;
+  nickname_bo?: string | null;
   department?: string | null;
 }
 

@@ -12,11 +12,16 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { useLanguage, toTibetanDigits } from '@/components/providers/language-provider';
+import MonthYearPicker from '@/components/billing/month-year-picker';
 
 export default function ActivityHistoryPage() {
     const router = useRouter();
+    const { t, language } = useLanguage();
     const [history, setHistory] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [filterMonth, setFilterMonth] = useState<number | null>(null);
+    const [filterYear, setFilterYear] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchHistory = async () => {
@@ -27,11 +32,11 @@ export default function ActivityHistoryPage() {
                     router.push('/login');
                     return;
                 }
-                
+
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/user/activity`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (res.ok) {
                     const data = await res.json();
                     setHistory(Array.isArray(data) ? data : []);
@@ -46,42 +51,73 @@ export default function ActivityHistoryPage() {
         fetchHistory();
     }, [router]);
 
+    const filteredHistory = history.filter((activity) => {
+        if (filterMonth === null || filterYear === null) return true;
+        const date = new Date(activity.lunch_day.lunch_date);
+        return (date.getMonth() + 1) === filterMonth && date.getFullYear() === filterYear;
+    });
+
     return (
         <div className="min-h-screen bg-background text-foreground font-sans">
             <Header />
             <div className="max-w-4xl mx-auto px-4 pt-28 pb-20">
-                <button 
+                <button
                     onClick={() => router.push('/user_dashboard')}
                     className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium mb-8 transition-colors cursor-pointer"
                 >
                     <ArrowLeft size={20} />
-                    Back to Dashboard
+                    {t('back_to_dashboard')}
                 </button>
 
                 <div className="bg-card rounded-[2rem] shadow-sm border border-border p-8 md:p-12 text-foreground">
-                    <div className="flex items-center gap-4 mb-8">
-                        <div className="w-14 h-14 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center">
-                            <History size={28} />
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center">
+                                <History size={28} />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-[#F5F5F5]">{t('activity_history')}</h1>                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-[#F5F5F5]">Activity History</h1>
-                            <p className="text-slate-500 dark:text-slate-400">A complete record of your meal participations</p>
+
+                        {/* Month Filter Controls */}
+                        <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end relative z-20">
+                            {filterMonth !== null && (
+                                <button
+                                    onClick={() => {
+                                        setFilterMonth(null);
+                                        setFilterYear(null);
+                                    }}
+                                    className="px-3.5 py-2 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-all cursor-pointer bg-slate-50 dark:bg-[#202020] border border-slate-200 dark:border-[#323232] rounded-xl shadow-sm hover:shadow"
+                                >
+                                    {t('clear_filter')}
+                                </button>
+                            )}
+                            <MonthYearPicker
+                                selectedMonth={filterMonth ?? new Date().getMonth() + 1}
+                                selectedYear={filterYear ?? new Date().getFullYear()}
+                                onChange={(m, y) => {
+                                    setFilterMonth(m);
+                                    setFilterYear(y);
+                                }}
+                                buttonClassName="px-4 py-2 text-xs"
+                                placeholder={filterMonth === null ? t('filter_by_month') : undefined}
+                            />
                         </div>
                     </div>
 
                     {loading ? (
                         <div className="py-20 flex flex-col items-center justify-center text-slate-400">
                             <Utensils size={40} className="animate-pulse mb-4 text-blue-300" />
-                            <p className="font-medium">Loading history...</p>
+                            <p className="font-medium">{t('loading_history')}</p>
                         </div>
-                    ) : history.length > 0 ? (
+                    ) : filteredHistory.length > 0 ? (
                         <div className="space-y-4">
-                            {history.map((activity, index) => (
-                                <motion.div 
+                            {filteredHistory.map((activity, index) => (
+                                <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.05 }}
-                                    key={activity.id} 
+                                    key={activity.id}
                                     className="flex flex-col sm:flex-row sm:items-center justify-between p-6 rounded-2xl border border-slate-100 dark:border-[#323232] hover:border-blue-100 dark:hover:border-border hover:shadow-md hover:shadow-blue-500/5 transition-all bg-slate-50/50 dark:bg-[#202020]/30"
                                 >
                                     <div className="flex items-center gap-5 mb-4 sm:mb-0">
@@ -90,23 +126,43 @@ export default function ActivityHistoryPage() {
                                         </div>
                                         <div>
                                             <p className="text-lg font-bold text-slate-800 dark:text-[#F5F5F5]">
-                                                {activity.status === 'opted_in' ? 'Joined Lunch' : 'Skipped Lunch'}
+                                                {activity.status === 'opted_in' ? t('history_joined_lunch') : t('history_skipped_lunch')}
                                             </p>
                                             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-1">
                                                 <Utensils size={14} />
-                                                {activity.lunch_day?.menu?.title || 'Unknown Menu'}
+                                                {activity.lunch_day?.menu ? t(activity.lunch_day.menu.title) : t('unknown_menu')}
                                             </p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 text-slate-500 dark:text-slate-300 bg-white dark:bg-[#202020] px-4 py-2 rounded-xl border border-slate-200 dark:border-[#323232] shadow-sm w-fit">
                                         <Calendar size={16} className="text-blue-500" />
                                         <span className="text-sm font-bold">
-                                            {new Date(activity.lunch_day.lunch_date).toLocaleDateString('en-US', { 
-                                                weekday: 'long', 
-                                                month: 'long', 
-                                                day: 'numeric', 
-                                                year: 'numeric' 
-                                            })}
+                                            {(() => {
+                                                const date = new Date(activity.lunch_day.lunch_date);
+                                                if (language === 'bo') {
+                                                    const tibetanWeekdays = [
+                                                        'གཟའ་ཉི་མ།', // Sunday
+                                                        'གཟའ་ཟླ་བ།', // Monday
+                                                        'གཟའ་མིག་དམར།', // Tuesday
+                                                        'གཟའ་ལྷག་པ།', // Wednesday
+                                                        'གཟའ་ཕུར་བུ།', // Thursday
+                                                        'གཟའ་པ་སངས།', // Friday
+                                                        'གཟའ་སྤེན་པ།' // Saturday
+                                                    ];
+                                                    const weekday = tibetanWeekdays[date.getDay()];
+                                                    const m = toTibetanDigits(date.getMonth() + 1);
+                                                    const d = toTibetanDigits(date.getDate());
+                                                    const y = toTibetanDigits(date.getFullYear());
+                                                    return `${weekday} ཕྱི་ཟླ་ ${m} པའི་ཚེས་ ${d} ལོ་ ${y}`;
+                                                } else {
+                                                    return date.toLocaleDateString('en-US', {
+                                                        weekday: 'long',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        year: 'numeric'
+                                                    });
+                                                }
+                                            })()}
                                         </span>
                                     </div>
                                 </motion.div>
@@ -115,8 +171,8 @@ export default function ActivityHistoryPage() {
                     ) : (
                         <div className="py-20 text-center border-2 border-dashed border-slate-200 dark:border-[#323232] rounded-3xl bg-slate-50 dark:bg-[#202020]/25">
                             <History size={48} className="mx-auto text-slate-300 mb-4" />
-                            <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">No History Found</h3>
-                            <p className="text-slate-500 dark:text-slate-400">You haven't participated in any meals yet.</p>
+                            <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">{t('no_history_found')}</h3>
+                            <p className="text-slate-500 dark:text-slate-400">{t('no_history_desc')}</p>
                         </div>
                     )}
                 </div>

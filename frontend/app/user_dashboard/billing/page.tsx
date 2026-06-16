@@ -54,7 +54,7 @@ export default function BillingPage() {
                     className="flex items-center gap-2 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium mb-8 transition-colors cursor-pointer"
                 >
                     <ArrowLeft size={20} />
-                    {t('back_to_dashboard') || 'Back to Dashboard'}
+                    {t('back_to_dashboard')}
                 </button>
 
                 <div className="w-full">

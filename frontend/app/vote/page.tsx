@@ -64,12 +64,12 @@ export default function LunchVotePage() {
         const weekday = date.toLocaleString('en-US', { weekday: 'long' });
         const month = date.toLocaleString('en-US', { month: 'long' });
         const day = date.getDate();
-        
+
         let suffix = 'th';
         if (day === 1 || day === 21 || day === 31) suffix = 'st';
         else if (day === 2 || day === 22) suffix = 'nd';
         else if (day === 3 || day === 23) suffix = 'rd';
-        
+
         return `${weekday}, ${month} ${day}${suffix}`;
       }
     };
@@ -376,49 +376,44 @@ export default function LunchVotePage() {
         router.push('/');
       }} />
 
-      <main className="max-w-5xl mx-auto pt-32 pb-12 px-6">
+      <main className="max-w-5xl mx-auto pt-28 pb-12 px-4 sm:px-6">
 
         {/* Header Section */}
-        <div className="mb-12 text-center md:text-left flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <div>
-            <h1 className="text-4xl font-extrabold tracking-tight mb-3">{t('lunch_at_work')}</h1>
-            <p className="text-lg text-gray-500 dark:text-gray-400 font-medium">
-              {t('confirm_attendance_for')} <span className="text-gray-900 dark:text-[#F5F5F5]">{formattedDate || t('fallback_menu_date')}</span>
-            </p>
-          </div>
-          <div className="bg-card border border-border rounded-2xl px-6 py-4 shadow-sm flex flex-col items-center md:items-end w-fit mx-auto md:mx-0">
+        <div className="mb-6 sm:mb-12 text-center md:text-left flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+
+          <div className="bg-card border border-border rounded-2xl px-4 py-2 sm:px-6 sm:py-4 shadow-sm flex flex-col items-center md:items-end w-fit mx-auto md:mx-0 shrink-0">
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{t('voting_deadline')}</span>
-            <span className={`text-xl font-black ${isDeadlineMet ? 'text-red-500' : 'text-[#2E5A88] dark:text-[#D7E8F4]'}`}>
+            <span className={`text-lg sm:text-xl font-black ${isDeadlineMet ? 'text-red-500' : 'text-[#2E5A88] dark:text-[#D7E8F4]'}`}>
               {isDeadlineMet ? t('closed') : (language === 'bo' ? toTibetanDigits(timeLeft) : timeLeft)}
             </span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-10">
 
           {/* Main Content Card */}
           <div className="lg:col-span-7">
-            <div className="bg-card rounded-[2rem] border border-border shadow-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-gray-200/50">
+            <div className="bg-card rounded-2xl sm:rounded-[2rem] border border-border shadow-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-gray-200/50">
               <div className="aspect-[16/9] relative overflow-hidden">
                 <img
                   src={todayMeal?.image || DAILY_MENU.image}
                   alt="Lunch"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-6 left-6 bg-white/90 dark:bg-[#202020]/90 backdrop-blur-md px-4 py-2 rounded-full shadow-sm border border-white/50 dark:border-[#323232]">
-                  <span className="text-xs font-bold text-[#2E5A88] dark:text-[#D7E8F4] uppercase tracking-widest">{t('todays_special')}</span>
+                <div className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-white/90 dark:bg-[#202020]/90 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-sm border border-white/50 dark:border-[#323232]">
+                  <span className="text-[10px] sm:text-xs font-bold text-[#2E5A88] dark:text-[#D7E8F4] uppercase tracking-widest">{t('todays_special')}</span>
                 </div>
               </div>
 
-              <div className="p-10">
-                <h2 className="text-3xl font-bold mb-4">{t(todayMeal?.title || DAILY_MENU.dishName)}</h2>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-lg mb-8">
+              <div className="p-4 sm:p-8 md:p-10">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4">{t(todayMeal?.title || DAILY_MENU.dishName)}</h2>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-sm sm:text-base md:text-lg mb-6 sm:mb-8">
                   {t(getDishDescriptionKey(todayMeal?.title || DAILY_MENU.dishName))}
                 </p>
- 
-                <div className="flex items-start gap-4 p-5 bg-gray-50 dark:bg-[#202020] rounded-2xl border border-gray-100 dark:border-[#323232]">
-                  <Info className="text-gray-400 shrink-0 mt-0.5" size={20} />
-                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+
+                <div className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 bg-gray-50 dark:bg-[#202020] rounded-xl sm:rounded-2xl border border-gray-100 dark:border-[#323232]">
+                  <Info className="text-gray-400 shrink-0 mt-0.5" size={18} />
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
                     {t('meal_details_info')}
                   </p>
                 </div>
@@ -427,48 +422,48 @@ export default function LunchVotePage() {
           </div>
           {/* Voting Side Panel */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="bg-card rounded-[2rem] p-8 border border-border shadow-sm sticky top-32">
-              <h3 className="text-xl font-bold mb-6">{t('will_you_join')}</h3>
- 
-              <div className="space-y-4">
+            <div className="bg-card rounded-2xl sm:rounded-[2rem] p-4 sm:p-8 border border-border shadow-sm sticky top-32">
+              <h3 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">{t('will_you_join')}</h3>
+
+              <div className="space-y-3 sm:space-y-4">
                 <button
                   disabled={isDeadlineMet || isSubmitting || !lunchDayId}
                   onClick={() => submitVote("yes")}
-                  className={`w-full group relative flex items-center justify-between p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${attendance === "yes"
+                  className={`w-full group relative flex items-center justify-between p-4 sm:p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${attendance === "yes"
                     ? "border-[#2E5A88] dark:border-[#D7E8F4] bg-[#2E5A88]/5 dark:bg-[#D7E8F4]/5"
                     : "border-gray-100 dark:border-[#323232] hover:border-gray-200 dark:hover:border-border"
                     } ${isDeadlineMet ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     <div className={`p-2 rounded-lg transition-colors ${attendance === 'yes' ? 'bg-[#2E5A88] dark:bg-[#D7E8F4] text-white dark:text-[#1C1C1C]' : 'bg-gray-100 dark:bg-[#202020] text-gray-400 dark:text-slate-400'}`}>
-                      <Check size={20} />
+                      <Check size={18} className="sm:w-5 sm:h-5" />
                     </div>
-                    <span className="text-lg font-bold">{t('vote_yes')}</span>
+                    <span className="text-base sm:text-lg font-bold">{t('vote_yes')}</span>
                   </div>
                   {attendance === "yes" && (
                     <motion.div layoutId="check" className="text-[#2E5A88] dark:text-[#D7E8F4]">
-                      <Circle size={12} fill="currentColor" />
+                      <Circle size={10} fill="currentColor" />
                     </motion.div>
                   )}
                 </button>
- 
+
                 <button
                   disabled={isDeadlineMet || isSubmitting || !lunchDayId}
                   onClick={() => submitVote("no")}
-                  className={`w-full group flex items-center justify-between p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${attendance === "no"
+                  className={`w-full group flex items-center justify-between p-4 sm:p-6 rounded-2xl border-2 transition-all duration-300 cursor-pointer ${attendance === "no"
                     ? "border-red-500 bg-red-50 dark:bg-red-950/15"
                     : "border-gray-100 dark:border-[#323232] hover:border-gray-200 dark:hover:border-border"
                     } ${isDeadlineMet ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
                     <div className={`p-2 rounded-lg transition-colors ${attendance === 'no' ? 'bg-red-500 text-white' : 'bg-gray-100 dark:bg-[#202020] text-gray-400 dark:text-slate-400'}`}>
-                      <X size={20} />
+                      <X size={18} className="sm:w-5 sm:h-5" />
                     </div>
-                    <span className="text-lg font-bold">{t('vote_no')}</span>
+                    <span className="text-base sm:text-lg font-bold">{t('vote_no')}</span>
                   </div>
                 </button>
               </div>                {/* Deadline Status */}
-              <div className="mt-10 pt-8 border-t border-gray-50 dark:border-[#323232] flex flex-col items-center gap-4">
+              <div className="mt-6 sm:mt-10 pt-6 sm:pt-8 border-t border-gray-50 dark:border-[#323232] flex flex-col items-center gap-4">
                 {isDeadlineMet ? (
                   <div className="bg-red-50 dark:bg-red-950/20 text-red-600 px-6 py-3 rounded-full flex items-center gap-2 text-sm font-bold animate-pulse">
                     <Clock size={10} /> {t('voting_locked')}
@@ -478,7 +473,7 @@ export default function LunchVotePage() {
                     {t('response_cutoff')}
                   </p>
                 )}
- 
+
                 <AnimatePresence>
                   {attendance && !isDeadlineMet && (
                     <motion.div
@@ -494,20 +489,18 @@ export default function LunchVotePage() {
             </div>
           </div>
         </div>
+
         {/* Calendar Section */}
-        <div className="mt-12 bg-card rounded-[2rem] p-8 border border-border shadow-sm transition-all hover:shadow-xl hover:shadow-gray-200/50">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 pb-6 border-b border-border">
+        <div className="mt-8 sm:mt-12 bg-card rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 md:p-8 border border-border shadow-sm transition-all hover:shadow-xl hover:shadow-gray-200/50">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6 sm:mb-8 pb-6 border-b border-border">
             <div>
-              <h2 className="text-2xl font-black flex items-center gap-3">
-                <CalendarDays className="text-[#2E5A88] dark:text-[#D7E8F4]" size={24} />
+              <h2 className="text-lg sm:text-xl md:text-2xl font-black flex items-center gap-3">
+                <CalendarDays className="text-[#2E5A88] dark:text-[#D7E8F4]" size={22} />
                 {t('plan_your_meals')}
               </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1">
-                {t('calendar_subtitle')}
-              </p>
             </div>
- 
-            <div className="flex flex-wrap items-center gap-4">
+
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
               {/* Month Selector */}
               <div className="flex items-center bg-gray-100 dark:bg-[#202020] rounded-xl p-1 border dark:border-[#323232]">
                 <button
@@ -515,9 +508,9 @@ export default function LunchVotePage() {
                   className="p-2 hover:bg-white dark:hover:bg-[#272727] rounded-lg transition-colors text-gray-600 dark:text-slate-300 hover:text-[#2E5A88] cursor-pointer"
                   title="Previous Month"
                 >
-                  <ChevronLeft size={18} />
+                  <ChevronLeft size={16} />
                 </button>
-                <span className="px-4 font-bold text-sm min-w-[120px] text-center text-slate-800 dark:text-slate-200">
+                <span className="px-2 sm:px-4 font-bold text-xs sm:text-sm min-w-[90px] sm:min-w-[120px] text-center text-slate-800 dark:text-slate-200">
                   {getMonthName(calendarMonth, language)} {calendarYear}
                 </span>
                 <button
@@ -525,24 +518,24 @@ export default function LunchVotePage() {
                   className="p-2 hover:bg-white dark:hover:bg-[#272727] rounded-lg transition-colors text-gray-600 dark:text-slate-300 hover:text-[#2E5A88] cursor-pointer"
                   title="Next Month"
                 >
-                  <ChevronRight size={18} />
+                  <ChevronRight size={16} />
                 </button>
               </div>
 
               {/* Month Bulk Actions */}
               {getUnlockedWeekdaysInMonth().length > 0 && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <button
                     disabled={isCalendarSubmitting}
                     onClick={() => handleBatchVote(getUnlockedWeekdaysInMonth(), 'opted_out')}
-                    className="px-4 py-2 text-xs font-bold text-red-600 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl transition-colors border border-red-200/40 dark:border-red-900/40 cursor-pointer disabled:opacity-50"
+                    className="px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-bold text-red-600 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl transition-colors border border-red-200/40 dark:border-red-900/40 cursor-pointer disabled:opacity-50"
                   >
                     {t('opt_out_month')}
                   </button>
                   <button
                     disabled={isCalendarSubmitting}
                     onClick={() => handleBatchVote(getUnlockedWeekdaysInMonth(), 'opted_in')}
-                    className="px-4 py-2 text-xs font-bold text-green-600 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-xl transition-colors border border-green-200/40 dark:border-green-900/40 cursor-pointer disabled:opacity-50"
+                    className="px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-bold text-green-600 bg-green-50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-xl transition-colors border border-green-200/40 dark:border-green-900/40 cursor-pointer disabled:opacity-50"
                   >
                     {t('opt_in_month')}
                   </button>
@@ -582,7 +575,7 @@ export default function LunchVotePage() {
                           if (!day) {
                             return <div key={dayIndex} className="rounded-2xl bg-gray-50/30 dark:bg-[#202020]/20 border border-dashed border-gray-100 dark:border-[#323232]" />;
                           }
- 
+
                           if (day.is_weekend) {
                             return (
                               <div
@@ -598,53 +591,49 @@ export default function LunchVotePage() {
                               </div>
                             );
                           }
- 
+
                           const isJoining = day.status === 'opted_in';
                           const dayNum = parseInt(day.date.split('-')[2], 10);
                           const formattedDayNum = language === 'bo' ? toTibetanDigits(dayNum) : dayNum;
- 
+
                           return (
                             <div
                               key={dayIndex}
                               onClick={() => handleToggleDay(day)}
-                              className={`p-4 rounded-2xl border flex flex-col items-center justify-between text-center transition-all duration-300 h-24 select-none relative group ${
-                                day.is_locked
-                                  ? 'opacity-80 bg-gray-50 dark:bg-[#202020]/75 border-gray-200 dark:border-[#323232] cursor-not-allowed'
-                                  : isJoining
+                              className={`p-4 rounded-2xl border flex flex-col items-center justify-between text-center transition-all duration-300 h-24 select-none relative group ${day.is_locked
+                                ? 'opacity-80 bg-gray-50 dark:bg-[#202020]/75 border-gray-200 dark:border-[#323232] cursor-not-allowed'
+                                : isJoining
                                   ? 'bg-green-50/40 dark:bg-green-950/10 border-green-500/20 dark:border-green-900/30 hover:bg-green-50 dark:hover:bg-green-900/20 hover:border-green-500 cursor-pointer'
                                   : 'bg-red-50/30 dark:bg-red-950/10 border-red-500/20 dark:border-red-900/30 hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-500 cursor-pointer'
-                              }`}
+                                }`}
                             >
                               {/* Day Number and Lock Indicator */}
                               <div className="w-full flex items-center justify-between">
-                                <span className={`text-sm font-black ${
-                                  day.is_locked ? 'text-gray-400 dark:text-slate-500' : isJoining ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
-                                }`}>
+                                <span className={`text-sm font-black ${day.is_locked ? 'text-gray-400 dark:text-slate-500' : isJoining ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+                                  }`}>
                                   {formattedDayNum}
                                 </span>
                                 {day.is_locked && (
                                   <Lock size={12} className="text-gray-400 dark:text-slate-500 shrink-0" />
                                 )}
                               </div>
- 
+
                               {/* Menu / Dish Name */}
                               <div className="w-full truncate text-[10px] font-bold text-gray-400 dark:text-slate-500 px-1 mt-1 group-hover:text-gray-600 dark:group-hover:text-slate-300 transition-colors">
                                 {day.menu ? t(day.menu.title) : t('menu_not_set')}
                               </div>
- 
+
                               {/* Status Badge */}
                               <div className="mt-2 flex items-center gap-1.5">
                                 {isJoining ? (
-                                  <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full flex items-center gap-1 ${
-                                    day.is_locked ? 'bg-gray-100 dark:bg-[#202020] text-gray-500 dark:text-slate-400' : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                                  }`}>
+                                  <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full flex items-center gap-1 ${day.is_locked ? 'bg-gray-100 dark:bg-[#202020] text-gray-500 dark:text-slate-400' : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                    }`}>
                                     <Check size={10} strokeWidth={3} />
                                     <span className="hidden sm:inline">{t('legend_joining')}</span>
                                   </span>
                                 ) : (
-                                  <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full flex items-center gap-1 ${
-                                    day.is_locked ? 'bg-gray-100 dark:bg-[#202020] text-gray-500 dark:text-slate-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                                  }`}>
+                                  <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full flex items-center gap-1 ${day.is_locked ? 'bg-gray-100 dark:bg-[#202020] text-gray-500 dark:text-slate-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                                    }`}>
                                     <X size={10} strokeWidth={3} />
                                     <span className="hidden sm:inline">{t('legend_skipped')}</span>
                                   </span>

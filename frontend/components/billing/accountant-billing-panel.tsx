@@ -30,7 +30,8 @@ import {
   UserMonthlyBill,
 } from '@/lib/billing';
 import { useToast } from '@/components/providers/toast-provider';
-import { useLanguage } from '@/components/providers/language-provider';
+import { useLanguage, toTibetanDigits } from '@/components/providers/language-provider';
+import MonthYearPicker from './month-year-picker';
 
 const MONTHS = [
   { value: 1, label: 'January' },
@@ -65,8 +66,8 @@ function PaymentBadge({ status }: { status: PaymentStatus }) {
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${paid
-          ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30'
-          : 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30'
+        ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30'
+        : 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30'
         }`}
     >
       {paid ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
@@ -76,7 +77,109 @@ function PaymentBadge({ status }: { status: PaymentStatus }) {
 }
 
 export default function AccountantBillingPanel() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  const formatMonthYear = (month: number, year: number) => {
+    if (language === 'bo') {
+      return `ཕྱི་ཟླ་ ${toTibetanDigits(month)} པ་ལོ་ ${toTibetanDigits(year)}`;
+    }
+    return monthLabel(month, year);
+  };
+
+  const formatPrice = (amount: number) => {
+    const formatted = formatCurrency(amount);
+    return language === 'bo' ? toTibetanDigits(formatted) : formatted;
+  };
+
+  const formatFullDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    if (language === 'bo') {
+      const tibetanWeekdays = [
+        'གཟའ་ཉི་མ།', // Sunday
+        'གཟའ་ཟླ་བ།', // Monday
+        'གཟའ་མིག་དམར།', // Tuesday
+        'གཟའ་ལྷག་པ།', // Wednesday
+        'གཟའ་ཕུར་བུ།', // Thursday
+        'གཟའ་པ་སངས།', // Friday
+        'གཟའ་སྤེན་པ།' // Saturday
+      ];
+      const weekday = tibetanWeekdays[date.getDay()];
+      const m = toTibetanDigits(date.getMonth() + 1);
+      const d = toTibetanDigits(date.getDate());
+      const y = toTibetanDigits(date.getFullYear());
+      return `${weekday} ཕྱི་ཟླ་ ${m} པའི་ཚེས་ ${d} ལོ་ ${y}`;
+    } else {
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+  };
+
+  const formatDateRange = (startStr: string | undefined, endStr: string | undefined) => {
+    if (!startStr || !endStr) return '';
+    const startDate = new Date(startStr);
+    const endDate = new Date(endStr);
+    
+    if (language === 'bo') {
+      const sm = toTibetanDigits(startDate.getMonth() + 1);
+      const sd = toTibetanDigits(startDate.getDate());
+      const em = toTibetanDigits(endDate.getMonth() + 1);
+      const ed = toTibetanDigits(endDate.getDate());
+      const ey = toTibetanDigits(endDate.getFullYear());
+      return `ཕྱི་ཟླ་ ${sm} ཚེས་ ${sd} ནས་ ཕྱི་ཟླ་ ${em} ཚེས་ ${ed} ལོ་ ${ey} བར།`;
+    } else {
+      const sFormatted = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const eFormatted = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return `${sFormatted} to ${eFormatted}`;
+    }
+  };
+
+  const formatMonthDay = (dateStr: string) => {
+    const date = new Date(dateStr);
+    if (language === 'bo') {
+      const m = toTibetanDigits(date.getMonth() + 1);
+      const d = toTibetanDigits(date.getDate());
+      return `ཕྱི་ཟླ་ ${m} ཚེས་ ${d}`;
+    } else {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+  };
+
+  const formatPaidAt = (paidAtStr: string | null | undefined) => {
+    if (!paidAtStr) return '—';
+    const date = new Date(paidAtStr);
+    if (language === 'bo') {
+      const m = toTibetanDigits(date.getMonth() + 1);
+      const d = toTibetanDigits(date.getDate());
+      const y = toTibetanDigits(date.getFullYear());
+      return `ཕྱི་ཟླ་ ${m} ཚེས་ ${d} ལོ་ ${y}`;
+    } else {
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    }
+  };
+
+  const formatVotedAt = (votedAtStr: string | null | undefined) => {
+    if (!votedAtStr) return '—';
+    if (language === 'bo') {
+      let formatted = votedAtStr;
+      if (votedAtStr.toUpperCase().includes('AM')) {
+        formatted = 'སྔ་དྲོ་ ' + votedAtStr.toUpperCase().replace('AM', '');
+      } else if (votedAtStr.toUpperCase().includes('PM')) {
+        formatted = 'ཕྱི་དྲོ་ ' + votedAtStr.toUpperCase().replace('PM', '');
+      }
+      return t('voted_at', { time: toTibetanDigits(formatted.trim()) });
+    }
+    return t('voted_at', { time: votedAtStr });
+  };
+
   const { showToast } = useToast();
   const now = new Date();
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
@@ -310,12 +413,11 @@ export default function AccountantBillingPanel() {
       </div>
 
       {/* Main Tab Switcher */}
-      <div className="flex border-b border-slate-200 dark:border-[#323232] gap-4">
+      <div className="flex border-b border-slate-200 dark:border-[#323232] gap-4 relative z-20">
         <button
           onClick={() => setActiveTab('billing')}
-          className={`pb-4 px-2 font-bold text-sm transition-all flex items-center gap-2 relative ${
-            activeTab === 'billing' ? 'text-[#2E5A88] dark:text-[#D7E8F4]' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
-          }`}
+          className={`pb-4 px-2 font-bold text-sm transition-all flex items-center gap-2 relative ${activeTab === 'billing' ? 'text-[#2E5A88] dark:text-[#D7E8F4]' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
+            }`}
         >
           <Receipt size={18} />
           {t('tab_billing')}
@@ -325,9 +427,8 @@ export default function AccountantBillingPanel() {
         </button>
         <button
           onClick={() => setActiveTab('participation')}
-          className={`pb-4 px-2 font-bold text-sm transition-all flex items-center gap-2 relative ${
-            activeTab === 'participation' ? 'text-[#2E5A88] dark:text-[#D7E8F4]' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
-          }`}
+          className={`pb-4 px-2 font-bold text-sm transition-all flex items-center gap-2 relative ${activeTab === 'participation' ? 'text-[#2E5A88] dark:text-[#D7E8F4]' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
+            }`}
         >
           <Users size={18} />
           {t('tab_participation')}
@@ -335,6 +436,19 @@ export default function AccountantBillingPanel() {
             <motion.div layoutId="activeTabUnderline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2E5A88] dark:bg-[#D7E8F4]" />
           )}
         </button>
+
+        {activeTab === 'billing' && bill && (
+          <div className="ml-auto flex items-center pb-2">
+            <MonthYearPicker
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              onChange={(m, y) => {
+                setSelectedMonth(m);
+                setSelectedYear(y);
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {activeTab === 'billing' && (
@@ -359,28 +473,7 @@ export default function AccountantBillingPanel() {
                 )}
               </button>
             )}
-            <select
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="px-4 py-2.5 bg-white dark:bg-[#202020] border border-slate-200 dark:border-[#323232] text-slate-900 dark:text-[#F5F5F5] rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2E5A88]/20 dark:focus:ring-[#D7E8F4]/20"
-            >
-              {MONTHS.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="px-4 py-2.5 bg-white dark:bg-[#202020] border border-slate-200 dark:border-[#323232] text-slate-900 dark:text-[#F5F5F5] rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#2E5A88]/20 dark:focus:ring-[#D7E8F4]/20"
-            >
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
+
           </div>
 
           {loading ? (
@@ -392,11 +485,11 @@ export default function AccountantBillingPanel() {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 {[
-                  { label: t('total_bill'), value: formatCurrency(bill.total_bill), icon: <IndianRupee className="text-[#2E5A88] dark:text-[#D7E8F4]" /> },
-                  { label: t('total_plates'), value: bill.total_plates, icon: <Users className="text-indigo-600 dark:text-indigo-400" /> },
-                  { label: t('per_plate_cost'), value: formatCurrency(bill.plate_cost), icon: <Receipt className="text-violet-600 dark:text-violet-400" /> },
-                  { label: t('paid_users'), value: stats.paid_users, icon: <CheckCircle2 className="text-emerald-600 dark:text-emerald-400" /> },
-                  { label: t('unpaid_users'), value: stats.unpaid_users, icon: <XCircle className="text-amber-600 dark:text-amber-400" /> },
+                  { label: t('total_bill'), value: formatPrice(bill.total_bill), icon: <IndianRupee className="text-[#2E5A88] dark:text-[#D7E8F4]" /> },
+                  { label: t('total_plates'), value: language === 'bo' ? toTibetanDigits(bill.total_plates) : bill.total_plates, icon: <Users className="text-indigo-600 dark:text-indigo-400" /> },
+                  { label: t('per_plate_cost'), value: formatPrice(bill.plate_cost), icon: <Receipt className="text-violet-600 dark:text-violet-400" /> },
+                  { label: t('paid_users'), value: language === 'bo' ? toTibetanDigits(stats.paid_users) : stats.paid_users, icon: <CheckCircle2 className="text-emerald-600 dark:text-emerald-400" /> },
+                  { label: t('unpaid_users'), value: language === 'bo' ? toTibetanDigits(stats.unpaid_users) : stats.unpaid_users, icon: <XCircle className="text-amber-600 dark:text-amber-400" /> },
                 ].map((card, i) => (
                   <GlassCard key={card.label} className="p-5">
                     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
@@ -413,7 +506,7 @@ export default function AccountantBillingPanel() {
               {bill.bill_image_url && (
                 <GlassCard className="p-4 overflow-hidden">
                   <p className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-3">
-                    {t('bill_receipt', { period: monthLabel(bill.month, bill.year) })}
+                    {t('bill_receipt', { period: formatMonthYear(bill.month, bill.year) })}
                   </p>
                   <img src={bill.bill_image_url} alt={t('monthly_lunch_billing')} className="max-h-64 rounded-2xl object-contain" />
                 </GlassCard>
@@ -422,7 +515,7 @@ export default function AccountantBillingPanel() {
               <GlassCard className="p-8">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
                   <h3 className="text-xl font-bold text-slate-900 dark:text-[#F5F5F5]">
-                    {t('user_billing', { period: monthLabel(bill.month, bill.year) })}
+                    {t('user_billing', { period: formatMonthYear(bill.month, bill.year) })}
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {(['all', 'paid', 'unpaid'] as const).map((f) => (
@@ -433,8 +526,8 @@ export default function AccountantBillingPanel() {
                           setPage(1);
                         }}
                         className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-all duration-300 ${paymentFilter === f
-                            ? 'bg-[#2E5A88] dark:bg-[#D7E8F4] text-white dark:text-[#1C1C1C] shadow-md shadow-[#2E5A88]/10 dark:shadow-none'
-                            : 'bg-slate-50 dark:bg-[#202020] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#323232]/50'
+                          ? 'bg-[#2E5A88] dark:bg-[#D7E8F4] text-white dark:text-[#1C1C1C] shadow-md shadow-[#2E5A88]/10 dark:shadow-none'
+                          : 'bg-slate-50 dark:bg-[#202020] text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#323232]/50'
                           }`}
                       >
                         {f === 'all' ? t('all_filter') : t(f)}
@@ -492,20 +585,14 @@ export default function AccountantBillingPanel() {
                               animate={{ opacity: 1 }}
                               className="border-t border-slate-50 dark:border-[#323232] hover:bg-slate-50/50 dark:hover:bg-[#202020]/50 transition-colors"
                             >
-                              <td className="p-4 font-semibold text-slate-800 dark:text-[#F5F5F5]">{row.user?.name}</td>
-                              <td className="p-4 text-slate-600 dark:text-slate-300">{row.joined_count}</td>
-                              <td className="p-4 font-bold text-slate-900 dark:text-[#F5F5F5]">{formatCurrency(row.amount_due)}</td>
+                              <td className="p-4 font-semibold text-slate-800 dark:text-[#F5F5F5]">{language === 'bo' ? (row.user?.name_bo || row.user?.name) : row.user?.name}</td>
+                              <td className="p-4 text-slate-600 dark:text-slate-300">{language === 'bo' ? toTibetanDigits(row.joined_count) : row.joined_count}</td>
+                              <td className="p-4 font-bold text-slate-900 dark:text-[#F5F5F5]">{formatPrice(row.amount_due)}</td>
                               <td className="p-4">
                                 <PaymentBadge status={row.payment_status} />
                               </td>
                               <td className="p-4 text-slate-500 dark:text-slate-400 text-xs">
-                                {row.paid_at
-                                  ? new Date(row.paid_at).toLocaleDateString(undefined, {
-                                    month: 'short',
-                                    day: 'numeric',
-                                    year: 'numeric',
-                                  })
-                                  : '—'}
+                                {formatPaidAt(row.paid_at)}
                               </td>
                               <td className="p-4">
                                 <button
@@ -555,13 +642,23 @@ export default function AccountantBillingPanel() {
               </GlassCard>
             </>
           ) : (
-            <GlassCard className="p-8">
-              <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-[#F5F5F5]">
-                {t('upload_bill', { period: monthLabel(selectedMonth, selectedYear) })}
-              </h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-                {t('no_bill_exists')}
-              </p>
+            <GlassCard className="p-8 relative z-20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-[#F5F5F5]">
+                    {t('upload_bill', { period: formatMonthYear(selectedMonth, selectedYear) })}
+                  </h3>
+
+                </div>
+                <MonthYearPicker
+                  selectedMonth={selectedMonth}
+                  selectedYear={selectedYear}
+                  onChange={(m, y) => {
+                    setSelectedMonth(m);
+                    setSelectedYear(y);
+                  }}
+                />
+              </div>
               <form onSubmit={handleUpload} className="space-y-5 max-w-xl">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('total_bill_amount')}</label>
@@ -632,17 +729,16 @@ export default function AccountantBillingPanel() {
 
       {activeTab === 'participation' && (
         <div className="space-y-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/50 dark:bg-[#202020]/50 backdrop-blur-md p-3 rounded-3xl border border-slate-100/80 dark:border-[#323232]/80 shadow-sm">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white/50 dark:bg-[#202020]/50 backdrop-blur-md p-3 rounded-3xl border border-slate-100/80 dark:border-[#323232]/80 shadow-sm relative z-20">
             <div className="flex gap-2">
               {(['daily', 'weekly', 'monthly'] as const).map((view) => (
                 <button
                   key={view}
                   onClick={() => setParticipationView(view)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold capitalize transition-all ${
-                    participationView === view
-                      ? 'bg-[#2E5A88] dark:bg-[#D7E8F4] text-white dark:text-[#1C1C1C] shadow-md shadow-[#2E5A88]/15 dark:shadow-none'
-                      : 'bg-slate-50 dark:bg-[#272727] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#323232]/50'
-                  }`}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold capitalize transition-all ${participationView === view
+                    ? 'bg-[#2E5A88] dark:bg-[#D7E8F4] text-white dark:text-[#1C1C1C] shadow-md shadow-[#2E5A88]/15 dark:shadow-none'
+                    : 'bg-slate-50 dark:bg-[#272727] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-[#323232]/50'
+                    }`}
                 >
                   {t(`${view}_participation`)}
                 </button>
@@ -681,30 +777,15 @@ export default function AccountantBillingPanel() {
                 </div>
               )}
               {participationView === 'monthly' && (
-                <div className="flex gap-2">
-                  <select
-                    value={reportMonth}
-                    onChange={(e) => setReportMonth(Number(e.target.value))}
-                    className="px-4 py-2 bg-white dark:bg-[#202020] border border-slate-200 dark:border-[#323232] text-slate-900 dark:text-[#F5F5F5] rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#2E5A88]/20 dark:focus:ring-[#D7E8F4]/20"
-                  >
-                    {MONTHS.map((m) => (
-                      <option key={m.value} value={m.value}>
-                        {m.label}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={reportYear}
-                    onChange={(e) => setReportYear(Number(e.target.value))}
-                    className="px-4 py-2 bg-white dark:bg-[#202020] border border-slate-200 dark:border-[#323232] text-slate-900 dark:text-[#F5F5F5] rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#2E5A88]/20 dark:focus:ring-[#D7E8F4]/20"
-                  >
-                    {years.map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <MonthYearPicker
+                  selectedMonth={reportMonth}
+                  selectedYear={reportYear}
+                  onChange={(m, y) => {
+                    setReportMonth(m);
+                    setReportYear(y);
+                  }}
+                  buttonClassName="px-4 py-2 text-xs"
+                />
               )}
             </div>
           </div>
@@ -716,25 +797,20 @@ export default function AccountantBillingPanel() {
             </div>
           ) : reportData ? (
             <div className="space-y-6">
-              {participationView === 'daily' && (
+               {participationView === 'daily' && (
                 <GlassCard className="p-8">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
                       <h3 className="text-lg font-bold text-slate-800 dark:text-[#F5F5F5] flex items-center gap-2">
                         <Calendar size={18} className="text-[#2E5A88] dark:text-[#D7E8F4]" />
-                        {new Date(reportData.date).toLocaleDateString(undefined, {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
+                        {formatFullDate(reportData.date)}
                       </h3>
                       {reportData.has_menu ? (
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                           {t('todays_special')}: <span className="font-bold text-[#2E5A88] dark:text-[#D7E8F4]">{t(reportData.menu_title)}</span>
                         </p>
                       ) : (
-                        <p className="text-xs text-rose-500 dark:text-rose-400 font-medium mt-1">{t('no_menu_set')}</p>
+                        <p className="text-xs text-rose-500 dark:text-rose-450 font-medium mt-1">{t('no_menu_set')}</p>
                       )}
                     </div>
 
@@ -742,13 +818,13 @@ export default function AccountantBillingPanel() {
                       <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100/80 dark:border-emerald-900/30 px-4 py-2.5 rounded-2xl text-center">
                         <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase leading-none">{t('total_opted_in')}</p>
                         <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300 mt-1.5 leading-none">
-                          {reportData?.users?.filter((u: any) => u.status === 'joining').length ?? 0}
+                          {language === 'bo' ? toTibetanDigits(reportData?.users?.filter((u: any) => u.status === 'joining').length ?? 0) : (reportData?.users?.filter((u: any) => u.status === 'joining').length ?? 0)}
                         </p>
                       </div>
                       <div className="bg-rose-50/50 dark:bg-rose-950/20 border border-rose-100/80 dark:border-rose-900/30 px-4 py-2.5 rounded-2xl text-center">
                         <p className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase leading-none">{t('total_opted_out')}</p>
                         <p className="text-lg font-bold text-rose-700 dark:text-rose-300 mt-1.5 leading-none">
-                          {reportData?.users?.filter((u: any) => u.status === 'skipped').length ?? 0}
+                          {language === 'bo' ? toTibetanDigits(reportData?.users?.filter((u: any) => u.status === 'skipped').length ?? 0) : (reportData?.users?.filter((u: any) => u.status === 'skipped').length ?? 0)}
                         </p>
                       </div>
                     </div>
@@ -759,18 +835,18 @@ export default function AccountantBillingPanel() {
                       <thead>
                         <tr className="bg-slate-50 dark:bg-[#202020] text-left text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider border-b border-slate-100 dark:border-[#323232]">
                           <th className="p-4 font-semibold">{t('user_column')}</th>
-                          <th className="p-4 font-semibold">Role</th>
-                          <th className="p-4 font-semibold">Department</th>
+                          <th className="p-4 font-semibold">{t('column_role')}</th>
+                          <th className="p-4 font-semibold">{t('column_department')}</th>
                           <th className="p-4 font-semibold">{t('status_column')}</th>
-                          <th className="p-4 font-semibold">Voted At</th>
+                          <th className="p-4 font-semibold">{t('column_voted_at')}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {reportData?.users?.map((u: any) => (
                           <tr key={u.id} className="border-t border-slate-50 dark:border-[#323232] hover:bg-slate-50/50 dark:hover:bg-[#202020]/50 transition-colors">
-                            <td className="p-4 font-semibold text-slate-800 dark:text-[#F5F5F5]">{u.name}</td>
-                            <td className="p-4 text-slate-500 dark:text-slate-400 capitalize text-xs">{u.role}</td>
-                            <td className="p-4 text-slate-500 dark:text-slate-400 text-xs">{u.department}</td>
+                            <td className="p-4 font-semibold text-slate-800 dark:text-[#F5F5F5]">{language === 'bo' ? (u.name_bo || u.name) : u.name}</td>
+                            <td className="p-4 text-slate-500 dark:text-slate-400 capitalize text-xs">{t('role_' + u.role.toLowerCase())}</td>
+                            <td className="p-4 text-slate-500 dark:text-slate-400 text-xs">{t((u.department || 'General').toLowerCase())}</td>
                             <td className="p-4">
                               {u.status === 'joining' ? (
                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30">
@@ -786,7 +862,7 @@ export default function AccountantBillingPanel() {
                                 </span>
                               )}
                             </td>
-                            <td className="p-4 text-xs text-slate-400 dark:text-slate-500">{u.voted_at}</td>
+                            <td className="p-4 text-xs text-slate-400 dark:text-slate-500">{formatVotedAt(u.voted_at)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -803,7 +879,7 @@ export default function AccountantBillingPanel() {
                       {t('weekly_participation')}
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Period: <span className="font-bold text-[#2E5A88] dark:text-[#D7E8F4]">{reportData?.week_start ? new Date(reportData.week_start).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}</span> to <span className="font-bold text-[#2E5A88] dark:text-[#D7E8F4]">{reportData?.week_end ? new Date(reportData.week_end).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</span>
+                      {t('billing_period')}: <span className="font-bold text-[#2E5A88] dark:text-[#D7E8F4]">{formatDateRange(reportData?.week_start, reportData?.week_end)}</span>
                     </p>
                   </div>
 
@@ -814,8 +890,8 @@ export default function AccountantBillingPanel() {
                           <th className="p-4 font-semibold">{t('user_column')}</th>
                           {reportData?.days?.map((d: any) => (
                             <th key={d.date} className="p-4 font-semibold text-center min-w-[120px]">
-                              <div>{new Date(d.date).toLocaleDateString(undefined, { weekday: 'short' })}</div>
-                              <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal normal-case">{new Date(d.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
+                              <div>{t(new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }))}</div>
+                              <div className="text-[10px] text-slate-400 dark:text-slate-500 font-normal normal-case">{formatMonthDay(d.date)}</div>
                               {d.has_menu ? (
                                 <div className="text-[9px] text-[#2E5A88] dark:text-[#D7E8F4] font-bold mt-0.5 max-w-[120px] truncate mx-auto" title={t(d.menu_title)}>{t(d.menu_title)}</div>
                               ) : (
@@ -831,8 +907,8 @@ export default function AccountantBillingPanel() {
                         {reportData?.users?.map((u: any) => (
                           <tr key={u.id} className="border-t border-slate-50 dark:border-[#323232] hover:bg-slate-50/50 dark:hover:bg-[#202020]/50 transition-colors">
                             <td className="p-4 font-semibold text-slate-800 dark:text-[#F5F5F5]">
-                              <div>{u.name}</div>
-                              <div className="text-[10px] text-slate-400 dark:text-slate-500 capitalize font-normal">{u.role} • {u.department}</div>
+                              <div>{language === 'bo' ? (u.name_bo || u.name) : u.name}</div>
+                              <div className="text-[10px] text-slate-400 dark:text-slate-500 capitalize font-normal">{t('role_' + u.role.toLowerCase())} • {t((u.department || 'General').toLowerCase())}</div>
                             </td>
                             {reportData?.days?.map((d: any) => {
                               const status = u.days?.[d.date];
@@ -852,8 +928,8 @@ export default function AccountantBillingPanel() {
                                 </td>
                               );
                             })}
-                            <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400 text-center">{u.joined_count}</td>
-                            <td className="p-4 font-bold text-rose-500 dark:text-rose-400 text-center">{u.skipped_count}</td>
+                            <td className="p-4 font-bold text-emerald-600 dark:text-emerald-400 text-center">{language === 'bo' ? toTibetanDigits(u.joined_count) : u.joined_count}</td>
+                            <td className="p-4 font-bold text-rose-500 dark:text-rose-400 text-center">{language === 'bo' ? toTibetanDigits(u.skipped_count) : u.skipped_count}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -868,10 +944,10 @@ export default function AccountantBillingPanel() {
                     <div>
                       <h3 className="text-lg font-bold text-slate-800 dark:text-[#F5F5F5] flex items-center gap-2">
                         <Calendar size={18} className="text-[#2E5A88] dark:text-[#D7E8F4]" />
-                        {MONTHS.find(m => m.value === reportMonth)?.label} {reportYear} - {t('participation_report')}
+                        {formatMonthYear(reportMonth, reportYear)} - {t('participation_report')}
                       </h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        Total Days: <span className="font-bold text-[#2E5A88] dark:text-[#D7E8F4]">{reportData?.total_lunch_days ?? 0} lunch days</span>
+                        {t('total_days')}: <span className="font-bold text-[#2E5A88] dark:text-[#D7E8F4]">{language === 'bo' ? toTibetanDigits(reportData?.total_lunch_days ?? 0) : (reportData?.total_lunch_days ?? 0)} {t('lunch_days')}</span>
                       </p>
                     </div>
                   </div>
@@ -881,8 +957,8 @@ export default function AccountantBillingPanel() {
                       <thead>
                         <tr className="bg-slate-50 dark:bg-[#202020] text-left text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider border-b border-slate-100 dark:border-[#323232]">
                           <th className="p-4 font-semibold">{t('user_column')}</th>
-                          <th className="p-4 font-semibold">Role</th>
-                          <th className="p-4 font-semibold">Department</th>
+                          <th className="p-4 font-semibold">{t('column_role')}</th>
+                          <th className="p-4 font-semibold">{t('column_department')}</th>
                           <th className="p-4 font-semibold text-center">{t('total_eligible')}</th>
                           <th className="p-4 font-semibold text-center">{t('total_opted_in')}</th>
                           <th className="p-4 font-semibold text-center">{t('total_opted_out')}</th>
@@ -891,12 +967,12 @@ export default function AccountantBillingPanel() {
                       <tbody>
                         {reportData?.users?.map((u: any) => (
                           <tr key={u.id} className="border-t border-slate-50 dark:border-[#323232] hover:bg-slate-50/50 dark:hover:bg-[#202020]/50 transition-colors">
-                            <td className="p-4 font-semibold text-slate-800 dark:text-[#F5F5F5]">{u.name}</td>
-                            <td className="p-4 text-slate-500 dark:text-slate-400 capitalize text-xs">{u.role}</td>
-                            <td className="p-4 text-slate-500 dark:text-slate-400 text-xs">{u.department}</td>
-                            <td className="p-4 text-center text-slate-700 dark:text-slate-350 font-medium">{u.total_eligible_days}</td>
-                            <td className="p-4 text-center font-bold text-emerald-600 dark:text-emerald-400">{u.joined_count}</td>
-                            <td className="p-4 text-center font-bold text-rose-500 dark:text-rose-400">{u.skipped_count}</td>
+                            <td className="p-4 font-semibold text-slate-800 dark:text-[#F5F5F5]">{language === 'bo' ? (u.name_bo || u.name) : u.name}</td>
+                            <td className="p-4 text-slate-500 dark:text-slate-400 capitalize text-xs">{t('role_' + u.role.toLowerCase())}</td>
+                            <td className="p-4 text-slate-500 dark:text-slate-400 text-xs">{t((u.department || 'General').toLowerCase())}</td>
+                            <td className="p-4 text-center text-slate-700 dark:text-slate-350 font-medium">{language === 'bo' ? toTibetanDigits(u.total_eligible_days) : u.total_eligible_days}</td>
+                            <td className="p-4 text-center font-bold text-emerald-600 dark:text-emerald-400">{language === 'bo' ? toTibetanDigits(u.joined_count) : u.joined_count}</td>
+                            <td className="p-4 text-center font-bold text-rose-500 dark:text-rose-400">{language === 'bo' ? toTibetanDigits(u.skipped_count) : u.skipped_count}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -907,7 +983,7 @@ export default function AccountantBillingPanel() {
             </div>
           ) : (
             <div className="p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-[#272727] border border-slate-100 dark:border-[#323232] rounded-3xl">
-              No report data available.
+              {t('no_report_data')}
             </div>
           )}
         </div>

@@ -82,7 +82,7 @@ class MonthlyBillController extends Controller
 
         $monthlyBill->load([
             'uploader:id,name,email',
-            'userBills' => fn ($q) => $q->with('user:id,name,email,department')->orderByDesc('amount_due'),
+            'userBills' => fn ($q) => $q->with('user:id,name,name_bo,nickname,nickname_bo,email,department')->orderByDesc('amount_due'),
         ]);
 
         $monthlyBill->payment_statistics = $this->billingService->paymentStatistics($monthlyBill);

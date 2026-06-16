@@ -40,6 +40,7 @@ Route::prefix('v1')->group(function () {
 
         // Auth User
         Route::get('/user', [AuthController::class, 'user']);
+        Route::post('/user/profile', [AuthController::class, 'updateProfile']);
 
         Route::post('/logout', [AuthController::class, 'logout']);
 

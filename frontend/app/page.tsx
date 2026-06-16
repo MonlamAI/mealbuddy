@@ -70,23 +70,23 @@ export default function HomePage() {
       <Header />
 
       {/* HERO */}
-      <section className="max-w-7xl mx-auto px-6 py-24 text-center">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-24 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
+          <h1 className="text-3xl sm:text-2xl md:text-6xl font-bold mb-6 tracking-tight">
             {t('hero_title')}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-10 text-xl leading-relaxed">
+          <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto mb-10 text-base sm:text-lg md:text-xl leading-relaxed">
             {t('hero_subtitle')}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-sm mx-auto sm:max-w-none w-full">
             <button
               onClick={() => user ? router.push('/vote') : router.push('/login')}
-              className="bg-[#2E5A88] text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-[#1F2A44] hover:shadow-xl transition-all transform hover:-translate-y-1"
+              className="w-full sm:w-auto bg-[#2E5A88] text-white px-8 py-3.5 sm:px-10 sm:py-4 rounded-full font-bold text-base sm:text-lg hover:bg-[#1F2A44] hover:shadow-xl transition-all transform hover:-translate-y-1"
             >
               {user ? t('vote_now') : t('join_team')}
             </button>
@@ -102,7 +102,7 @@ export default function HomePage() {
                   router.push('/login');
                 }
               }}
-              className="flex items-center justify-center gap-2 px-10 py-4 rounded-full border-2 border-gray-200 font-bold text-lg hover:bg-white hover:text-[#2E5A88] hover:border-[#2E5A88] transition-all"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 sm:px-10 sm:py-4 rounded-full border-2 border-gray-200 font-bold text-base sm:text-lg hover:bg-white hover:text-[#2E5A88] hover:border-[#2E5A88] transition-all"
             >
               {t('dashboard')} <ArrowRight size={20} />
             </button>
@@ -111,27 +111,27 @@ export default function HomePage() {
       </section>
 
       {/* WEEKLY MENU PREVIEW */}
-      <section className="max-w-7xl mx-auto px-6 py-20">
-        <div className="relative overflow-hidden bg-surface rounded-[3rem] p-10 md:p-16 shadow-2xl border border-border">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-10 md:py-20">
+        <div className="relative overflow-hidden bg-surface rounded-3xl sm:rounded-[3rem] p-6 sm:p-10 md:p-16 shadow-2xl border border-border">
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#2E5A88] blur-[100px] rounded-full" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#2E5A88]/10 blur-[100px] rounded-full" />
 
           <div className="relative z-10">
-            <div className="mb-12 text-center">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{t('weekly_menu_title')}</h2>
-              <p className="text-[#2e5a88] dark:text-blue-300 max-w-xl mx-auto">{t('weekly_menu_subtitle')}</p>
+            <div className="mb-8 md:mb-12 text-center">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-4">{t('weekly_menu_title')}</h2>
+              <p className="text-[#2e5a88] dark:text-blue-300 max-w-2xl mx-auto text-sm sm:text-base">{t('weekly_menu_subtitle')}</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
               {WEEKDAY_LABELS.map(({ key, label }) => {
                 const meal = menu.find((item) => item.weekday === key);
                 return (
                   <motion.div
                     key={key}
                     whileHover={{ y: -10 }}
-                    className="bg-white/50 dark:bg-card/50 backdrop-blur-md border border-white/10 dark:border-border/30 rounded-[2.5rem] p-6 text-center transition-all hover:bg-white/10 dark:hover:bg-card group cursor-pointer"
+                    className="bg-white/50 dark:bg-card/50 backdrop-blur-md border border-white/10 dark:border-border/30 rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 text-center transition-all hover:bg-white/10 dark:hover:bg-card group cursor-pointer"
                   >
-                    <p className="font-black text-blue-400 mb-4 uppercase tracking-[0.2em] text-[10px]">{label}</p>
+                    <p className="font-black text-blue-400 mb-4 uppercase tracking-[0.2em] text-[9px] sm:text-[10px]">{label}</p>
 
                     <div className="relative w-full aspect-square mb-5 rounded-3xl overflow-hidden bg-white/5 border border-white/5 shadow-inner">
                       {meal?.image_url ? (
@@ -148,7 +148,7 @@ export default function HomePage() {
                       <div className="absolute inset-0 bg-gradient-to-t from-[#1F2A44]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
 
-                    <h3 className="text-[#2e5a88] dark:text-[#D7E8F4] font-bold text-sm leading-tight group-hover:text-blue-300 dark:group-hover:text-blue-200 transition-colors">
+                    <h3 className="text-[#2e5a88] dark:text-[#D7E8F4] font-bold text-xs sm:text-sm leading-tight group-hover:text-blue-300 dark:group-hover:text-blue-200 transition-colors">
                       {meal ? t(meal.title) : (language === 'bo' ? 'ཟས་ཐོ་མྱུར་དུ་འགོད་པ།' : 'Menu coming soon')}
                     </h3>
                   </motion.div>
@@ -160,10 +160,10 @@ export default function HomePage() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="py-24">
+      <section className="py-16 md:py-24">
         <div className="max-w-6xl mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold mb-16">{t('how_it_works')}</h2>
-          <div className="grid md:grid-cols-3 gap-12">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-10 md:mb-16">{t('how_it_works')}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-12">
             {[
               {
                 icon: ClipboardList,
@@ -181,12 +181,12 @@ export default function HomePage() {
                 desc: t('how_step3_desc'),
               },
             ].map((item, i) => (
-              <div key={i} className="relative p-8 rounded-3xl hover:bg-white dark:hover:bg-card hover:shadow-xl transition-all border border-transparent hover:border-gray-100 dark:hover:border-border">
+              <div key={i} className="relative p-6 md:p-8 rounded-3xl hover:bg-white dark:hover:bg-card hover:shadow-xl transition-all border border-transparent hover:border-gray-100 dark:hover:border-border">
                 <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-2xl bg-[#F0F4F8] dark:bg-[#202020] text-[#2E5A88] dark:text-[#D7E8F4] mb-6">
                   <item.icon size={28} />
                 </div>
-                <h3 className="text-xl font-bold mb-4">{item.title}</h3>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed">{item.desc}</p>
+                <h3 className="text-lg sm:text-xl font-bold mb-4">{item.title}</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -195,20 +195,20 @@ export default function HomePage() {
 
       {/* CTA */}
       {!user && (
-        <section className="max-w-7xl mx-auto px-6 pb-24">
-          <div className="bg-[#2E5A88] rounded-[3rem] p-12 md:p-20 text-center text-white overflow-hidden relative">
+        <section className="max-w-7xl mx-auto px-6 pb-16 md:pb-24">
+          <div className="bg-[#2E5A88] rounded-3xl sm:rounded-[3rem] p-8 sm:p-12 md:p-20 text-center text-white overflow-hidden relative">
             <div className="absolute top-0 left-0 w-64 h-64 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3" />
 
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 relative z-10">
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-6 relative z-10">
               {t('cta_title')}
             </h2>
-            <p className="mb-10 text-blue-100 text-lg max-w-xl mx-auto relative z-10">
+            <p className="mb-8 md:mb-10 text-blue-100 text-sm sm:text-base md:text-lg max-w-xl mx-auto relative z-10">
               {t('cta_desc')}
             </p>
             <button
               onClick={handleLoginClick}
-              className="bg-white text-[#2E5A88] px-12 py-5 rounded-full font-bold text-lg hover:shadow-2xl transition-all transform hover:scale-105 relative z-10"
+              className="bg-white text-[#2E5A88] px-8 py-4 sm:px-12 sm:py-5 rounded-full font-bold text-base sm:text-lg hover:shadow-2xl transition-all transform hover:scale-105 relative z-10"
             >
               {t('cta_button')}
             </button>
