@@ -7,6 +7,7 @@ import { ArrowLeft, Camera, Save, User, Sparkles, Utensils } from 'lucide-react'
 import { useLanguage } from '@/components/providers/language-provider';
 import { useToast } from '@/components/providers/toast-provider';
 import Header from '@/components/header';
+import { apiUrl, authHeaders } from '@/lib/api-url';
 
 const GlassCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
     <div className={`bg-white/70 dark:bg-[#1E1E1E]/40 backdrop-blur-xl border border-white/25 dark:border-white/5 rounded-3xl shadow-xl ${className}`}>
@@ -94,12 +95,9 @@ export default function ProfilePage() {
                 formData.append('avatar', avatarFile);
             }
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/user/profile`, {
+            const res = await fetch(apiUrl('/v1/user/profile'), {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'application/json'
-                },
+                headers: authHeaders(true),
                 body: formData
             });
 

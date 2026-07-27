@@ -12,49 +12,20 @@ class MenuController extends Controller
 {
     private function menuDisk(): string
     {
-        return config('filesystems.bills_disk', 'bills');
+        return config('filesystems.default', 'public');
     }
 
-    private function resolveMenuImageUrl(?string $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
 
-        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://') || str_starts_with($value, 'data:')) {
-            return $value;
-        }
-
-        $disk = $this->menuDisk();
-        $storage = Storage::disk($disk);
-
-        if ($storage->exists($value)) {
-            try {
-                return $storage->url($value);
-            } catch (\Throwable) {
-                //
-            }
-        }
-
-        return $value;
-    }
-
-    private function formatMenu(WeeklyMenu $menu): WeeklyMenu
-    {
-        $menu->image_url = $this->resolveMenuImageUrl($menu->getRawOriginal('image_url'));
-
-        return $menu;
-    }
 
     public function index()
     {
         $order = ['mon' => 1, 'tue' => 2, 'wed' => 3, 'thu' => 4, 'fri' => 5];
 
-        return WeeklyMenu::all()
+        $menus = WeeklyMenu::all()
             ->sortBy(fn (WeeklyMenu $menu) => $order[(string) $menu->weekday] ?? 99)
-            ->values()
-            ->map(fn (WeeklyMenu $menu) => $this->formatMenu($menu))
             ->values();
+
+        return \App\Http\Resources\WeeklyMenuResource::collection($menus)->resolve();
     }
 
     public function update(Request $request, string $weekday): JsonResponse
@@ -84,6 +55,6 @@ class MenuController extends Controller
 
         $menu->update($updates);
 
-        return response()->json($this->formatMenu($menu->fresh()));
+        return response()->json(new \App\Http\Resources\WeeklyMenuResource($menu->fresh()));
     }
 }

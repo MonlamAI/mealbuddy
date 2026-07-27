@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useLanguage, toTibetanDigits } from '@/components/providers/language-provider';
 import MonthYearPicker from '@/components/billing/month-year-picker';
+import { apiUrl, authHeaders } from '@/lib/api-url';
 
 export default function ActivityHistoryPage() {
     const router = useRouter();
@@ -33,8 +34,8 @@ export default function ActivityHistoryPage() {
                     return;
                 }
 
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/user/activity`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const res = await fetch(apiUrl('/v1/user/activity'), {
+                    headers: authHeaders()
                 });
 
                 if (res.ok) {
