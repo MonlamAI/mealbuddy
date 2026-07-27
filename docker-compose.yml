@@ -40,8 +40,8 @@ services:
       - backend
     env_file:
       - ./frontend/.env.production
-    expose:
-      - "3000"
+    ports:
+      - "3000:3000"
 
   nginx:
     image: nginx:alpine
@@ -52,8 +52,9 @@ services:
       - backend
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-
+      - /etc/letsencrypt:/etc/letsencrypt:ro
 volumes:
   postgres_data:
