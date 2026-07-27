@@ -418,7 +418,7 @@ export default function LunchVotePage() {
                   <span className="text-[10px] sm:text-xs font-bold text-[#2E5A88] dark:text-[#D7E8F4] uppercase tracking-widest">{t('todays_special')}</span>
 
               </div>
-
+              </div>
               <div className="p-4 sm:p-8 md:p-10">
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4">{t(todayMeal?.title || DAILY_MENU.dishName)}</h2>
                 <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-sm sm:text-base md:text-lg mb-6 sm:mb-8">
