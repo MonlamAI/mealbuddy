@@ -266,15 +266,15 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
                                 </p>
                             </div>
                             <div className="w-10 h-10 rounded-full bg-blue-50 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center cursor-pointer" onClick={handleProfileClick}>
-                                <img 
-                                    src={currentUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name || 'Member'}`} 
-                                    alt="User" 
+                                <img
+                                    src={currentUser.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name || 'Member'}`}
+                                    alt="User"
                                     className="w-full h-full object-cover"
                                 />
                             </div>
-                            <button 
-                                onClick={() => router.push('/profile')} 
-                                className="p-2.5 text-slate-400 hover:text-blue-600 transition-colors" 
+                            <button
+                                onClick={() => router.push('/profile')}
+                                className="p-2.5 text-slate-400 hover:text-blue-600 transition-colors"
                                 title={t('profile_settings')}
                             >
                                 <Settings size={20} />

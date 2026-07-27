@@ -23,6 +23,7 @@ import {
 import { useLanguage } from '@/components/providers/language-provider';
 import { useTheme } from '@/components/providers/theme-provider';
 import Header from '@/components/header';
+import { apiUrl, authHeaders } from '@/lib/api-url';
 
 // --- Types ---
 
@@ -80,9 +81,8 @@ export default function UserDashboard() {
         // Fetch Recent Activity
         const fetchActivity = async () => {
             try {
-                const token = localStorage.getItem('token');
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/user/activity?limit=3`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const res = await fetch(apiUrl('/v1/user/activity?limit=3'), {
+                    headers: authHeaders()
                 });
                 if (res.ok) {
                     const data = await res.json();
@@ -97,9 +97,8 @@ export default function UserDashboard() {
         // Fetch User Stats
         const fetchStats = async () => {
             try {
-                const token = localStorage.getItem('token');
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/user/stats`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const res = await fetch(apiUrl('/v1/user/stats'), {
+                    headers: authHeaders()
                 });
                 if (res.ok) {
                     const data = await res.json();

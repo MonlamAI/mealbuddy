@@ -101,15 +101,7 @@ class LunchController extends Controller
                     'notes' => $day->notes,
                     'created_at' => $day->created_at?->toIso8601String(),
                     'updated_at' => $day->updated_at?->toIso8601String(),
-                    'menu' => $day->menu ? [
-                        'id' => $day->menu->id,
-                        'title' => $day->menu->title,
-                        'description' => $day->menu->description,
-                        'image_url' => $day->menu->image_url,
-                        'weekday' => $day->menu->weekday,
-                        'created_at' => $day->menu->created_at?->toIso8601String(),
-                        'updated_at' => $day->menu->updated_at?->toIso8601String(),
-                    ] : null,
+                    'menu' => $day->menu ? new \App\Http\Resources\WeeklyMenuResource($day->menu) : null,
                 ],
             ];
         });
@@ -200,7 +192,7 @@ class LunchController extends Controller
 
         return response()->json([
             'lunch_day_id' => $lunchDay->id,
-            'menu' => $menu,
+            'menu' => new \App\Http\Resources\WeeklyMenuResource($menu),
             'status' => $order ? $order->status : $defaultStatus,
             'is_deadline_met' => Carbon::now()->hour >= 10,
         ]);
@@ -248,10 +240,7 @@ class LunchController extends Controller
 
             if (! $isWeekend) {
                 $menu = $menus->get($weekday);
-                $dayMenu = $menu ? [
-                    'id' => $menu->id,
-                    'title' => $menu->title,
-                ] : null;
+                $dayMenu = $menu ? ['id' => $menu->id, 'title' => $menu->title] : null;
 
                 $lunchDay = $lunchDays->get($dateStr);
                 if ($lunchDay) {

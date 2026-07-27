@@ -21,6 +21,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useLanguage, LanguageSwitcher, toTibetanDigits, getDishDescriptionKey } from '@/components/providers/language-provider';
 import Header from '@/components/header';
+import { apiUrl, authHeaders } from '@/lib/api-url';
 
 // Mock Data - In production, this would come from a `useQuery` hook
 const DAILY_MENU = {
@@ -28,7 +29,6 @@ const DAILY_MENU = {
   date: "Tuesday, May 13th",
   dishName: "Shahi Paneer with Jeera Rice",
   description: "A rich, creamy north-Indian curry paired with aromatic basmati rice and fresh cucumber salad.",
-  image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&q=80&w=1200",
 };
 
 export default function LunchVotePage() {
@@ -89,12 +89,16 @@ export default function LunchVotePage() {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/calendar-poll?year=${year}&month=${month}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const res = await fetch(apiUrl(`/v1/calendar-poll?year=${year}&month=${month}`), {
+        headers: authHeaders()
       });
       if (res.ok) {
         const data = await res.json();
         setCalendarDays(data.days);
+      } else if (res.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        router.push('/login');
       }
     } catch (err) {
       console.error("Failed to fetch calendar data:", err);
@@ -118,11 +122,11 @@ export default function LunchVotePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/calendar-poll/batch`, {
+      const res = await fetch(apiUrl('/v1/calendar-poll/batch'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          ...authHeaders()
         },
         body: JSON.stringify({
           dates: [day.date],
@@ -154,11 +158,11 @@ export default function LunchVotePage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/calendar-poll/batch`, {
+      const res = await fetch(apiUrl('/v1/calendar-poll/batch'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          ...authHeaders()
         },
         body: JSON.stringify({
           dates,
@@ -282,8 +286,8 @@ export default function LunchVotePage() {
         const token = localStorage.getItem('token');
         if (!token) return; // Wait for auth check to redirect
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/today-poll`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const res = await fetch(apiUrl('/v1/today-poll'), {
+          headers: authHeaders()
         });
 
         if (res.ok) {
@@ -291,7 +295,7 @@ export default function LunchVotePage() {
           if (data.menu) {
             setTodayMeal({
               title: data.menu.title,
-              image: data.menu.image_url || DAILY_MENU.image
+              image: data.menu.image_url
             });
           }
           if (data.lunch_day_id) {
@@ -303,6 +307,10 @@ export default function LunchVotePage() {
           if (data.is_deadline_met) {
             setIsDeadlineMet(true);
           }
+        } else if (res.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          router.push('/login');
         }
       } catch (err) {
         console.error("Failed to fetch today's poll:", err);
@@ -342,11 +350,11 @@ export default function LunchVotePage() {
       const token = localStorage.getItem('token');
       const status = choice === 'yes' ? 'opted_in' : 'opted_out';
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/poll`, {
+      const res = await fetch(apiUrl('/v1/poll'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          ...authHeaders()
         },
         body: JSON.stringify({
           lunch_day_id: lunchDayId,
@@ -394,12 +402,18 @@ export default function LunchVotePage() {
           {/* Main Content Card */}
           <div className="lg:col-span-7">
             <div className="bg-card rounded-2xl sm:rounded-[2rem] border border-border shadow-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-gray-200/50">
-              <div className="aspect-[16/9] relative overflow-hidden">
-                <img
-                  src={todayMeal?.image || DAILY_MENU.image}
-                  alt="Lunch"
-                  className="w-full h-full object-cover"
-                />
+              <div className="aspect-[16/9] relative overflow-hidden bg-gray-100 dark:bg-[#202020] flex items-center justify-center">
+                {todayMeal?.image ? (
+                  <img
+                    src={todayMeal.image}
+                    alt="Lunch"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-gray-400 dark:text-slate-500">
+                    <ChefHat size={48} className="opacity-20" />
+                  </div>
+                )}
                 <div className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-white/90 dark:bg-[#202020]/90 backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-sm border border-white/50 dark:border-[#323232]">
                   <span className="text-[10px] sm:text-xs font-bold text-[#2E5A88] dark:text-[#D7E8F4] uppercase tracking-widest">{t('todays_special')}</span>
                 </div>
