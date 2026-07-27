@@ -22,12 +22,10 @@ class WeeklyMenuResource extends JsonResource
                 $disk = config('filesystems.default', 'public');
                 $storage = Storage::disk($disk);
 
-                if ($storage->exists($imageUrl)) {
-                    try {
-                        $imageUrl = $storage->url($imageUrl);
-                    } catch (\Throwable $e) {
-                        // ignore
-                    }
+                try {
+                    $imageUrl = $storage->url($imageUrl);
+                } catch (\Throwable $e) {
+                    // ignore
                 }
             }
         }
