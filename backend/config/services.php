@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'leave_tracker' => [
+        'api_key' => env('LEAVE_TRACKER_API_KEY'),
+        'url' => env('LEAVE_TRACKER_URL', 'https://portal.monlam.ai/api/v1/external/on-leave-today/'),
+    ],
+
 ];
