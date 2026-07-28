@@ -137,20 +137,6 @@ export default function UserDashboard() {
 
             <main className="relative z-10 max-w-6xl mx-auto px-4 pt-28 pb-16">
 
-                {/* Welcome Section */}
-                <section className="mb-6 sm:mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                    </motion.div>
-                    <motion.button
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        onClick={() => router.push('/profile')}
-                        className="px-4 py-2 bg-white/70 hover:bg-white dark:bg-[#1E1E1E]/40 border border-slate-200/60 dark:border-[#323232] rounded-2xl shadow-sm text-sm font-bold text-[#1F2A44] dark:text-[#F5F5F5] transition-all flex items-center justify-center gap-2 max-w-max self-start sm:self-auto cursor-pointer"
-                    >
-                        <Settings size={16} />
-                        <span>{t('profile_settings')}</span>
-                    </motion.button>
-                </section>
 
                 {/* Main Unified Dashboard Summary Card */}
                 <GlassCard className="p-4 sm:p-8 md:p-10">
