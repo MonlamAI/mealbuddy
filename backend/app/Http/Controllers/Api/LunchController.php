@@ -172,6 +172,21 @@ class LunchController extends Controller
             $weekday = 'mon';
         }
 
+        $offDay = \App\Models\OffDay::where('off_date', $today->toDateString())->first();
+        if ($offDay) {
+            return response()->json([
+                'lunch_day_id' => null,
+                'menu' => [
+                    'title' => 'Holiday: ' . $offDay->reason,
+                    'image_url' => null,
+                ],
+                'status' => 'opted_out',
+                'is_deadline_met' => true,
+                'is_off_day' => true,
+                'off_day_reason' => $offDay->reason,
+            ]);
+        }
+
         $menu = WeeklyMenu::where('weekday', $weekday)->first();
 
         if (! $menu) {
@@ -229,6 +244,11 @@ class LunchController extends Controller
         $days = [];
         $currentDate = $startDate->copy();
 
+        // Fetch all off days in this month
+        $offDays = \App\Models\OffDay::whereBetween('off_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->get()
+            ->keyBy('off_date');
+
         while ($currentDate->lte($endDate)) {
             $dateStr = $currentDate->toDateString();
             $weekday = strtolower($currentDate->format('D'));
@@ -239,24 +259,32 @@ class LunchController extends Controller
             $lunchDayId = null;
 
             if (! $isWeekend) {
-                $menu = $menus->get($weekday);
-                $dayMenu = $menu ? ['id' => $menu->id, 'title' => $menu->title] : null;
+                $offDay = $offDays->get($dateStr);
+                
+                if ($offDay) {
+                    $dayMenu = ['id' => null, 'title' => 'Holiday: ' . $offDay->reason];
+                    $status = 'opted_out';
+                } else {
+                    $menu = $menus->get($weekday);
+                    $dayMenu = $menu ? ['id' => $menu->id, 'title' => $menu->title] : null;
 
-                $lunchDay = $lunchDays->get($dateStr);
-                if ($lunchDay) {
-                    $lunchDayId = $lunchDay->id;
-                    $order = $orders->get($lunchDay->id);
-                    $status = $order ? $order->status : null;
-                }
+                    $lunchDay = $lunchDays->get($dateStr);
+                    if ($lunchDay) {
+                        $lunchDayId = $lunchDay->id;
+                        $order = $orders->get($lunchDay->id);
+                        $status = $order ? $order->status : null;
+                    }
 
-                if (! $status) {
-                    $status = $dateStr < $effectiveStartDate ? 'opted_out' : 'opted_in';
+                    if (! $status) {
+                        $status = $dateStr < $effectiveStartDate ? 'opted_out' : 'opted_in';
+                    }
                 }
             }
 
             $isPast = $currentDate->lt($today);
             $isToday = $currentDate->eq($today);
-            $isLocked = $isPast || ($isToday && Carbon::now()->hour >= 10);
+            $isOffDay = $offDays->has($dateStr);
+            $isLocked = $isPast || ($isToday && Carbon::now()->hour >= 10) || $isOffDay;
 
             $days[] = [
                 'date' => $dateStr,
@@ -297,10 +325,18 @@ class LunchController extends Controller
         // Load menus for day-of-week lookups
         $menus = WeeklyMenu::all()->keyBy('weekday');
 
+        // Fetch off days for batch dates
+        $offDays = \App\Models\OffDay::whereIn('off_date', $dates)->pluck('off_date')->toArray();
+
         $updatedOrders = [];
 
         foreach ($dates as $dateStr) {
             $date = Carbon::parse($dateStr);
+
+            // Skip off days
+            if (in_array($dateStr, $offDays)) {
+                continue;
+            }
 
             // Check validation: Cannot vote on past dates
             if ($date->lt($today)) {
@@ -366,13 +402,20 @@ class LunchController extends Controller
             $weekday = 'mon'; // fallback to Monday for UI demonstration on weekends
         }
 
-        // Today's Meal
-        $menu = WeeklyMenu::where('weekday', $weekday)->first();
-        $todayMeal = $menu ? $menu->title : 'Not set';
+        $offDay = \App\Models\OffDay::where('off_date', $today->format('Y-m-d'))->first();
+
+        if ($offDay) {
+            $todayMeal = 'Holiday: ' . $offDay->reason;
+            $menu = null;
+        } else {
+            // Today's Meal
+            $menu = WeeklyMenu::where('weekday', $weekday)->first();
+            $todayMeal = $menu ? $menu->title : 'Not set';
+        }
 
         // Get or Create LunchDay
         $lunchDay = null;
-        if ($menu) {
+        if ($menu && !$offDay) {
             $lunchDay = LunchDay::firstOrCreate(
                 ['lunch_date' => $today->format('Y-m-d')],
                 ['weekly_menu_id' => $menu->id]
@@ -429,7 +472,7 @@ class LunchController extends Controller
         } else {
             foreach ($employees as $emp) {
                 $effectiveStartDate = $emp->getEffectiveLunchStartDate();
-                if ($today->toDateString() < $effectiveStartDate) {
+                if ($offDay || $today->toDateString() < $effectiveStartDate) {
                     $status = 'skipped';
                     $skipped++;
                 } else {

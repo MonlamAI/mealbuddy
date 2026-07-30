@@ -65,28 +65,43 @@ class SyncLeaveStatus extends Command
             $employeesOnLeave = $data['employees'];
             $this->info("Found " . count($employeesOnLeave) . " employees on leave.");
 
-            // Check if there is a lunch day for today
-            $lunchDay = LunchDay::where('lunch_date', $today)->first();
-
-            if (!$lunchDay) {
-                $this->warn("No LunchDay created for today ({$today}). Leaves will not be synced to lunch orders.");
-                return Command::SUCCESS;
+            // Check if there is a lunch day for today, if not create it
+            $weekday = strtolower(Carbon::today()->format('D'));
+            if ($weekday === 'sat' || $weekday === 'sun') {
+                $weekday = 'mon';
             }
+            $menu = \App\Models\WeeklyMenu::where('weekday', $weekday)->first();
+
+            $lunchDay = LunchDay::firstOrCreate(
+                ['lunch_date' => $today],
+                ['weekly_menu_id' => $menu ? $menu->id : null]
+            );
 
             $optedOutCount = 0;
 
             foreach ($employeesOnLeave as $employeeData) {
                 $name = $employeeData['name'] ?? null;
+                $email = $employeeData['email'] ?? null;
                 
-                if (!$name) {
+                if (!$name && !$email) {
                     continue;
                 }
 
-                // Try to find the user by name
-                $user = User::where('name', $name)->first();
+                $user = null;
+
+                // Try to find the user by email first
+                if ($email) {
+                    $user = User::where('email', $email)->first();
+                }
+
+                // Fallback to finding the user by name
+                if (!$user && $name) {
+                    $user = User::where('name', $name)->first();
+                }
 
                 if (!$user) {
-                    $this->warn("Could not find user with name: {$name} in the local database.");
+                    $identifier = $email ?? $name;
+                    $this->warn("Could not find user with identifier: {$identifier} in the local database.");
                     continue;
                 }
 
