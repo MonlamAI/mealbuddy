@@ -20,6 +20,13 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        Schema::create('off_days', function (Blueprint $table) {
+            $table->id();
+            $table->date('off_date')->unique();
+            $table->string('reason')->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('lunch_days', function (Blueprint $table) {
             $table->id();
             $table->date('lunch_date')->unique();
@@ -43,6 +50,7 @@ return new class extends Migration
     {
         Schema::dropIfExists('lunch_orders');
         Schema::dropIfExists('lunch_days');
+        Schema::dropIfExists('off_days');
         Schema::dropIfExists('weekly_menus');
     }
 };

@@ -99,6 +99,16 @@ Route::prefix('v1')->group(function () {
 
         /*
         |--------------------------------------------------------------------------
+        | Off Days (Holidays)
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/off-days', [\App\Http\Controllers\Api\OffDayController::class, 'index']);
+        Route::post('/off-days', [\App\Http\Controllers\Api\OffDayController::class, 'store']);
+        Route::delete('/off-days/{id}', [\App\Http\Controllers\Api\OffDayController::class, 'destroy']);
+
+        /*
+        |--------------------------------------------------------------------------
         | Monthly Billing
         |--------------------------------------------------------------------------
         */

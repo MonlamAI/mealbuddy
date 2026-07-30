@@ -16,11 +16,18 @@ class MonthlyBillingService
     {
         $today = now()->toDateString();
 
+        $offDays = DB::table('off_days')
+            ->whereMonth('off_date', $month)
+            ->whereYear('off_date', $year)
+            ->pluck('off_date')
+            ->toArray();
+
         // Get all lunch days in the specified month with their dates on or before today
         $lunchDays = DB::table('lunch_days')
             ->whereMonth('lunch_date', $month)
             ->whereYear('lunch_date', $year)
             ->where('lunch_date', '<=', $today)
+            ->whereNotIn('lunch_date', $offDays)
             ->get(['id', 'lunch_date']);
 
         $lunchDayIds = $lunchDays->pluck('id');
