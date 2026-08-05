@@ -26,6 +26,7 @@ use Illuminate\Support\Facades\Storage;
     'employee_id',
     'department',
     'is_active',
+    'dietary_preference',
 ])]
 
 #[Hidden([

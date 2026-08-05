@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Camera, Save, User, Sparkles, Utensils } from 'lucide-react';
+import { ArrowLeft, Camera, Save, User, Sparkles, Utensils, Leaf, Drumstick } from 'lucide-react';
 import { useLanguage } from '@/components/providers/language-provider';
 import { useToast } from '@/components/providers/toast-provider';
 import Header from '@/components/header';
@@ -29,6 +29,7 @@ export default function ProfilePage() {
     const [nameBo, setNameBo] = useState('');
     const [nickname, setNickname] = useState('');
     const [nicknameBo, setNicknameBo] = useState('');
+    const [dietaryPreference, setDietaryPreference] = useState('non-veg');
 
     // Avatar file and preview
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -51,6 +52,7 @@ export default function ProfilePage() {
             setNameBo(parsedUser.name_bo || '');
             setNickname(parsedUser.nickname || '');
             setNicknameBo(parsedUser.nickname_bo || '');
+            setDietaryPreference(parsedUser.dietary_preference || 'non-veg');
             setAvatarPreview(parsedUser.avatar_url || '');
             setLoading(false);
         } catch (e) {
@@ -90,6 +92,7 @@ export default function ProfilePage() {
             formData.append('name_bo', nameBo);
             formData.append('nickname', nickname);
             formData.append('nickname_bo', nicknameBo);
+            formData.append('dietary_preference', dietaryPreference);
 
             if (avatarFile) {
                 formData.append('avatar', avatarFile);
@@ -265,6 +268,47 @@ export default function ProfilePage() {
                                     placeholder="e.g. ལྟོགས་པ་ཆེན་པོ།"
                                     className="w-full px-4 py-3 bg-white/50 dark:bg-[#202020]/50 border border-slate-200 dark:border-[#323232] rounded-2xl text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-800 dark:text-[#F5F5F5]"
                                 />
+                            </div>
+                        </div>
+
+                        {/* Dietary Preference Section */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                                {t('dietary_preference')}
+                            </label>
+                            <div className="flex flex-wrap gap-4 mt-1">
+                                <label className={`flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all cursor-pointer ${
+                                    dietaryPreference === 'non-veg' 
+                                        ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold shadow-md shadow-blue-500/10' 
+                                        : 'border-slate-200 dark:border-[#323232] bg-white/50 dark:bg-[#202020]/50 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-[#252525]'
+                                }`}>
+                                    <input 
+                                        type="radio" 
+                                        name="dietary_preference" 
+                                        value="non-veg" 
+                                        checked={dietaryPreference === 'non-veg'} 
+                                        onChange={() => setDietaryPreference('non-veg')} 
+                                        className="hidden" 
+                                    />
+                                    <Drumstick size={18} />
+                                    {t('non_veg')}
+                                </label>
+                                <label className={`flex items-center gap-3 px-5 py-3 rounded-2xl border transition-all cursor-pointer ${
+                                    dietaryPreference === 'veg' 
+                                        ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold shadow-md shadow-emerald-500/10' 
+                                        : 'border-slate-200 dark:border-[#323232] bg-white/50 dark:bg-[#202020]/50 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-[#252525]'
+                                }`}>
+                                    <input 
+                                        type="radio" 
+                                        name="dietary_preference" 
+                                        value="veg" 
+                                        checked={dietaryPreference === 'veg'} 
+                                        onChange={() => setDietaryPreference('veg')} 
+                                        className="hidden" 
+                                    />
+                                    <Leaf size={18} />
+                                    {t('veg')}
+                                </label>
                             </div>
                         </div>
 

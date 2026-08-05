@@ -95,6 +95,7 @@ class AuthController extends Controller
             'nickname' => 'nullable|string|max:255',
             'nickname_bo' => 'nullable|string|max:255',
             'avatar' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
+            'dietary_preference' => 'nullable|in:veg,non-veg',
         ]);
 
         $updates = [
@@ -103,6 +104,10 @@ class AuthController extends Controller
             'nickname' => $request->nickname,
             'nickname_bo' => $request->nickname_bo,
         ];
+
+        if ($request->has('dietary_preference')) {
+            $updates['dietary_preference'] = $request->dietary_preference;
+        }
 
         if ($request->hasFile('avatar')) {
             $oldAvatar = $user->avatar;
