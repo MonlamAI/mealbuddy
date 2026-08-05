@@ -428,6 +428,8 @@ class LunchController extends Controller
 
         // Calculate today's stats and participation details
         $joined = 0;
+        $joinedVeg = 0;
+        $joinedNonVeg = 0;
         $skipped = 0;
         $employeeDetails = [];
 
@@ -458,6 +460,14 @@ class LunchController extends Controller
                     }
                 }
 
+                if ($status === 'joining') {
+                    if ($emp->dietary_preference === 'veg') {
+                        $joinedVeg++;
+                    } else {
+                        $joinedNonVeg++;
+                    }
+                }
+
                 $employeeDetails[] = [
                     'id' => $emp->id,
                     'name' => $emp->name,
@@ -467,6 +477,7 @@ class LunchController extends Controller
                     'department' => $emp->department ?? 'General',
                     'status' => $status,
                     'votedAt' => $votedAt,
+                    'dietary_preference' => $emp->dietary_preference ?? 'non-veg',
                 ];
             }
         } else {
@@ -480,6 +491,14 @@ class LunchController extends Controller
                     $joined++;
                 }
 
+                if ($status === 'joining') {
+                    if ($emp->dietary_preference === 'veg') {
+                        $joinedVeg++;
+                    } else {
+                        $joinedNonVeg++;
+                    }
+                }
+
                 $employeeDetails[] = [
                     'id' => $emp->id,
                     'name' => $emp->name,
@@ -489,6 +508,7 @@ class LunchController extends Controller
                     'department' => $emp->department ?? 'General',
                     'status' => $status,
                     'votedAt' => '--:--',
+                    'dietary_preference' => $emp->dietary_preference ?? 'non-veg',
                 ];
             }
         }
@@ -522,6 +542,8 @@ class LunchController extends Controller
                 'todayMeal' => $todayMeal,
                 'totalEmployees' => $totalEmployees,
                 'joined' => $joined,
+                'joinedVeg' => $joinedVeg,
+                'joinedNonVeg' => $joinedNonVeg,
                 'skipped' => $skipped,
                 'employees' => $employeeDetails,
             ],

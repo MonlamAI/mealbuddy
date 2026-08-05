@@ -18,6 +18,8 @@ class LunchDayResource extends Resource
 {
     protected static ?string $model = LunchDay::class;
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'LunchDay';

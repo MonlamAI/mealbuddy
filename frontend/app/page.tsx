@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Utensils, Users, ClipboardList, User, LogOut } from 'lucide-react';
+import { ArrowRight, Utensils, Users, ClipboardList, User, LogOut, MessageSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLanguage, LanguageSwitcher } from '@/components/providers/language-provider';
 import Header from '@/components/header';
@@ -169,24 +169,31 @@ export default function HomePage() {
                 icon: ClipboardList,
                 title: t('how_step1_title'),
                 desc: t('how_step1_desc'),
+                isClickable: false,
               },
               {
                 icon: Users,
                 title: t('how_step2_title'),
                 desc: t('how_step2_desc'),
+                isClickable: false,
               },
               {
-                icon: Utensils,
-                title: t('how_step3_title'),
-                desc: t('how_step3_desc'),
+                icon: MessageSquare,
+                title: t('suggestions_board'),
+                desc: t('how_step3_suggestion_desc'),
+                isClickable: true,
               },
             ].map((item, i) => (
-              <div key={i} className="relative p-6 md:p-8 rounded-3xl hover:bg-white dark:hover:bg-card hover:shadow-xl transition-all border border-transparent hover:border-gray-100 dark:hover:border-border">
+              <div 
+                key={i} 
+                onClick={item.isClickable ? () => router.push('/suggestions') : undefined}
+                className={`relative p-6 md:p-8 rounded-3xl hover:bg-white dark:hover:bg-card hover:shadow-xl transition-all border border-transparent hover:border-gray-100 dark:hover:border-border ${item.isClickable ? 'flex flex-col h-full cursor-pointer' : ''}`}
+              >
                 <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-2xl bg-[#F0F4F8] dark:bg-[#202020] text-[#2E5A88] dark:text-[#D7E8F4] mb-6">
                   <item.icon size={28} />
                 </div>
                 <h3 className="text-lg sm:text-xl font-bold mb-4">{item.title}</h3>
-                <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base leading-relaxed">{item.desc}</p>
+                <p className={`text-gray-500 dark:text-gray-400 text-sm sm:text-base leading-relaxed ${item.isClickable ? 'flex-grow' : ''}`}>{item.desc}</p>
               </div>
             ))}
           </div>

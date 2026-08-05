@@ -120,5 +120,17 @@ Route::prefix('v1')->group(function () {
         Route::get('/monthly-bills/{monthlyBill}', [MonthlyBillController::class, 'show']);
         Route::patch('/monthly-bills/{monthlyBill}/user-bills/{userMonthlyBill}', [MonthlyBillController::class, 'updatePayment']);
         Route::delete('/monthly-bills/{monthlyBill}', [MonthlyBillController::class, 'destroy']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dish Suggestions
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/suggestions', [\App\Http\Controllers\Api\SuggestionController::class, 'index']);
+        Route::post('/suggestions', [\App\Http\Controllers\Api\SuggestionController::class, 'store']);
+        Route::post('/suggestions/{id}/vote', [\App\Http\Controllers\Api\SuggestionController::class, 'toggleVote']);
+        Route::patch('/suggestions/{id}/status', [\App\Http\Controllers\Api\SuggestionController::class, 'updateStatus']);
+        Route::delete('/suggestions/{id}', [\App\Http\Controllers\Api\SuggestionController::class, 'destroy']);
     });
 });

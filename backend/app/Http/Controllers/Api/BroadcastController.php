@@ -39,6 +39,10 @@ class BroadcastController extends Controller
 
     public function store(Request $request)
     {
+        if (!in_array($request->user()->role, ['chef', 'admin'])) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         $request->validate([
             'message' => 'required|string|max:1000',
             'type' => 'nullable|string|max:50',

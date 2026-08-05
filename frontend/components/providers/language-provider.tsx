@@ -288,6 +288,29 @@ const translations = {
     total_days: 'Total Days',
     lunch_days: 'lunch days',
     no_report_data: 'No report data available.',
+
+    // Suggest a Dish
+    suggestions_board: 'Suggestions Board',
+    suggest_dish: 'Suggest a Dish',
+    submit_suggestion: 'Submit Suggestion',
+    suggestion_title: 'Dish Name',
+    suggestion_desc: 'Why should we have it? (Optional)',
+    how_step3_suggestion_desc: 'Suggest new dishes and vote for your favorites to be added to the menu.',
+    upvote: 'Upvote',
+    upvoted: 'Upvoted',
+    mark_winner: 'Mark Winner',
+    mark_rejected: 'Reject',
+    status_pending: 'Pending',
+    status_approved: 'Approved',
+    status_rejected: 'Rejected',
+    status_won: 'Winner!',
+    no_suggestions: 'No suggestions yet. Be the first!',
+    submitted_by: 'Suggested by {name}',
+
+    // Dietary Preferences
+    dietary_preference: 'Dietary Preference',
+    veg: 'Vegetarian',
+    non_veg: 'Non-Vegetarian',
   },
   bo: {
     app_title: 'ཟས་མཐུན་ལས་རོགས།',
@@ -570,6 +593,29 @@ const translations = {
     total_days: 'ཉིན་གྲངས་ཁྱོན་བསྡོམས།',
     lunch_days: 'ཉིན་ཟས་ཀྱི་ཉིན་མོ།',
     no_report_data: 'སྙན་ཐོའི་གནས་ཚུལ་མི་འདུག།',
+
+    // Suggest a Dish
+    suggestions_board: 'ཟས་སྣ་གྲོས་འདོན་སྡིངས་ཆ།',
+    suggest_dish: 'ཟས་སྣ་གྲོས་འདོན་བྱེད་པ།',
+    submit_suggestion: 'གྲོས་འདོན་སྤྲོད་པ།',
+    suggestion_title: 'ཟས་ཀྱི་མིང་།',
+    suggestion_desc: 'རྒྱུ་མཚན་ཅིའི་ཕྱིར་དགོས་སམ། (འདེམས་ཚན།)',
+    how_step3_suggestion_desc: 'ཟས་སྣ་གསར་པ་གྲོས་འདོན་བྱེད་པ་དང་། ཁྱེད་རང་དགའ་ཤོས་ཀྱི་ཟས་སྣར་འོས་འཕེན་བྱས་ཏེ་ཟས་ཐོར་འཇུག་པ།',
+    upvote: 'རྒྱབ་སྐྱོར་བྱེད་པ།',
+    upvoted: 'རྒྱབ་སྐྱོར་བྱས་ཟིན།',
+    mark_winner: 'རྒྱལ་ཁ་ཐོབ་པར་འཇོག་པ།',
+    mark_rejected: 'ཕྱིར་འབུད་པ།',
+    status_pending: 'སྒུག་བཞིན་པ།',
+    status_approved: 'ཆོག་མཆན་ཐོབ་པ།',
+    status_rejected: 'ཕྱིར་འབུད་བྱས་པ།',
+    status_won: 'རྒྱལ་ཁ་ཐོབ་པ།',
+    no_suggestions: 'ད་དུང་གྲོས་འདོན་མེད། ཐོག་མ་དེ་བྱེད་རོགས།',
+    submitted_by: 'གྲོས་འདོན་བྱེད་མཁན། {name}',
+
+    // Dietary Preferences
+    dietary_preference: 'དཀར་དམར་གྱི་འདེམས་ཀ།',
+    veg: 'དཀར་ཟས།',
+    non_veg: 'དམར་ཟས།',
   }
 };
 

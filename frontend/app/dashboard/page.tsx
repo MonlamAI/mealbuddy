@@ -23,7 +23,9 @@ import {
     UploadCloud,
     CheckCheck,
     ChevronRight,
-    History
+    History,
+    Leaf,
+    Drumstick
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
@@ -60,12 +62,15 @@ interface Employee {
     department: string;
     status: ParticipationStatus;
     votedAt: string;
+    dietary_preference: string;
 }
 
 interface DashboardData {
     todayMeal: string;
     totalEmployees: number;
     joined: number;
+    joinedVeg: number;
+    joinedNonVeg: number;
     skipped: number;
     employees: Employee[];
 }
@@ -608,19 +613,27 @@ export default function ChefDashboard() {
                                 </h3>
 
                                 <div className="space-y-6">
-                                    <div>
-                                        <div className="flex justify-between text-sm mb-2 opacity-80">
-                                            <span>{t('total_plates_needed')}</span>
-                                            <span className="font-bold">{data?.joined}</span>
-                                        </div>
-                                        <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
-                                            <motion.div
-                                                initial={{ width: 0 }}
-                                                animate={{ width: '72%' }}
-                                                className="h-full bg-white"
-                                            />
-                                        </div>
+                                <div>
+                                    <div className="flex justify-between text-sm mb-2 opacity-80">
+                                        <span>{t('total_plates_needed')}</span>
+                                        <span className="font-bold">{data?.joined}</span>
                                     </div>
+                                    <div className="flex justify-between text-xs mb-2 opacity-80">
+                                        <span className="flex items-center gap-1"><Leaf size={14} /> {t('veg') ?? 'Veg'}</span>
+                                        <span className="font-bold">{data?.joinedVeg}</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs mb-3 opacity-80">
+                                        <span className="flex items-center gap-1"><Drumstick size={14} /> {t('non_veg') ?? 'Non-Veg'}</span>
+                                        <span className="font-bold">{data?.joinedNonVeg}</span>
+                                    </div>
+                                    <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${data?.joined && data?.totalEmployees ? (data.joined / data.totalEmployees) * 100 : 0}%` }}
+                                            className="h-full bg-white"
+                                        />
+                                    </div>
+                                </div>
 
                                     <div className="bg-white/10 p-4 rounded-2xl border border-white/10">
                                         <p className="text-xs uppercase tracking-widest opacity-70 mb-1">{t('response_cutoff_label')}</p>
@@ -758,7 +771,14 @@ function EmployeeRow({ employee }: { employee: Employee }) {
                     {initials}
                 </div>
                 <div>
-                    <p className="font-bold text-sm sm:text-base text-slate-800 dark:text-[#F5F5F5] group-hover:text-blue-600 transition-colors">{employee.name}</p>
+                    <div className="flex items-center gap-2">
+                        <p className="font-bold text-sm sm:text-base text-slate-800 dark:text-[#F5F5F5] group-hover:text-blue-600 transition-colors">{employee.name}</p>
+                        {employee.status === 'joining' && (
+                            <span className="text-xs text-slate-400" title={employee.dietary_preference === 'veg' ? t('veg') ?? 'Veg' : t('non_veg') ?? 'Non-Veg'}>
+                                {employee.dietary_preference === 'veg' ? <Leaf size={14} className="text-emerald-500" /> : <Drumstick size={14} className="text-blue-500" />}
+                            </span>
+                        )}
+                    </div>
                     {employee.department && employee.department.toLowerCase() !== 'general' && (
                         <p className="text-[10px] sm:text-xs text-slate-400 dark:text-slate-400">{employee.department}</p>
                     )}
