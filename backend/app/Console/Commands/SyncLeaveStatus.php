@@ -32,12 +32,16 @@ class SyncLeaveStatus extends Command
      */
     public function handle()
     {
-        $today = Carbon::today()->toDateString();
+        $todayCarbon = Carbon::today();
+        $today = $todayCarbon->toDateString();
+        $endDateStr = $todayCarbon->copy()->addDays(30)->toDateString();
         
-        $this->info("Starting leave sync for {$today}...");
+        $this->info("Starting leave sync from {$today} to {$endDateStr}...");
 
         $apiKey = config('services.leave_tracker.api_key');
-        $url = config('services.leave_tracker.url');
+        $baseUrl = config('services.leave_tracker.url');
+        $baseUrl = strtok($baseUrl, '?'); // Remove any existing query params
+        $url = $baseUrl . '?start_date=' . $today . '&end_date=' . $endDateStr;
 
         if (!$apiKey) {
             $this->error('Leave Tracker API key is not configured.');
@@ -72,18 +76,6 @@ class SyncLeaveStatus extends Command
             $employeesOnLeave = $data['employees'];
             $this->info("Found " . count($employeesOnLeave) . " employees on leave.");
 
-            // Check if there is a lunch day for today, if not create it
-            $weekday = strtolower(Carbon::today()->format('D'));
-            if ($weekday === 'sat' || $weekday === 'sun') {
-                $weekday = 'mon';
-            }
-            $menu = \App\Models\WeeklyMenu::where('weekday', $weekday)->first();
-
-            $lunchDay = LunchDay::firstOrCreate(
-                ['lunch_date' => $today],
-                ['weekly_menu_id' => $menu ? $menu->id : null]
-            );
-
             // Pre-fetch users to avoid N+1 queries
             $emails = array_filter(array_column($employeesOnLeave, 'email'));
             $names = array_filter(array_column($employeesOnLeave, 'name'));
@@ -97,8 +89,12 @@ class SyncLeaveStatus extends Command
 
             $optedOutCount = 0;
 
+            // Cache for lunch days to avoid redundant DB queries in the loop
+            $lunchDaysCache = [];
+            $menusCache = \App\Models\WeeklyMenu::all()->keyBy('weekday');
+
             // Use a transaction to ensure data integrity
-            DB::transaction(function () use ($employeesOnLeave, $lunchDay, $usersByEmail, $usersByName, &$optedOutCount) {
+            DB::transaction(function () use ($employeesOnLeave, $usersByEmail, $usersByName, &$optedOutCount, $todayCarbon, &$lunchDaysCache, $menusCache) {
                 foreach ($employeesOnLeave as $employeeData) {
                     $name = $employeeData['name'] ?? null;
                     $email = $employeeData['email'] ?? null;
@@ -122,24 +118,52 @@ class SyncLeaveStatus extends Command
                         continue;
                     }
 
-                    // Opt out the user
-                    LunchOrder::updateOrCreate(
-                        [
-                            'lunch_day_id' => $lunchDay->id,
-                            'user_id' => $user->id,
-                        ],
-                        [
-                            'status' => 'opted_out',
-                        ]
-                    );
+                    $startDate = Carbon::parse($employeeData['start_date'] ?? $todayCarbon->toDateString());
+                    $endDate = Carbon::parse($employeeData['end_date'] ?? $todayCarbon->toDateString());
                     
-                    $optedOutCount++;
-                    // Only log verbosely to avoid cluttering cron logs
-                    $this->info("Opted out user {$user->name} for today's lunch.", 'v');
+                    // Loop through each date of the leave
+                    $currentDate = $startDate->copy();
+                    while ($currentDate->lte($endDate)) {
+                        // Only process dates today or in the future
+                        if ($currentDate->gte($todayCarbon)) {
+                            $dateStr = $currentDate->toDateString();
+                            $weekday = strtolower($currentDate->format('D'));
+                            
+                            // Skip weekends
+                            if ($weekday !== 'sat' && $weekday !== 'sun') {
+                                if (!isset($lunchDaysCache[$dateStr])) {
+                                    $menu = $menusCache->get($weekday);
+                                    
+                                    $lunchDaysCache[$dateStr] = LunchDay::firstOrCreate(
+                                        ['lunch_date' => $dateStr],
+                                        ['weekly_menu_id' => $menu ? $menu->id : null]
+                                    );
+                                }
+                                
+                                $lunchDay = $lunchDaysCache[$dateStr];
+
+                                // Opt out the user
+                                LunchOrder::updateOrCreate(
+                                    [
+                                        'lunch_day_id' => $lunchDay->id,
+                                        'user_id' => $user->id,
+                                    ],
+                                    [
+                                        'status' => 'opted_out',
+                                    ]
+                                );
+                                
+                                $optedOutCount++;
+                                // Only log verbosely to avoid cluttering cron logs
+                                $this->info("Opted out user {$user->name} for lunch on {$dateStr}.", 'v');
+                            }
+                        }
+                        $currentDate->addDay();
+                    }
                 }
             });
 
-            $this->info("Leave sync completed successfully. {$optedOutCount} users opted out.");
+            $this->info("Leave sync completed successfully. {$optedOutCount} opt-out operations performed.");
             return Command::SUCCESS;
 
         } catch (\Exception $e) {
