@@ -81,11 +81,17 @@ class SyncLeaveStatus extends Command
             $names = array_filter(array_column($employeesOnLeave, 'name'));
             
             $users = User::whereIn('email', $emails)
-                         ->orWhereIn('name', $names)
+                         ->orWhere(function($query) use ($names) {
+                             foreach ($names as $name) {
+                                 $query->orWhereRaw('LOWER(name) = ?', [strtolower($name)]);
+                             }
+                         })
                          ->get();
                          
             $usersByEmail = $users->keyBy('email');
-            $usersByName = $users->keyBy('name');
+            $usersByName = $users->keyBy(function ($item) {
+                return strtolower($item->name);
+            });
 
             $optedOutCount = 0;
 
@@ -108,8 +114,8 @@ class SyncLeaveStatus extends Command
                     // Memory lookup instead of DB query
                     if ($email && $usersByEmail->has($email)) {
                         $user = $usersByEmail->get($email);
-                    } elseif ($name && $usersByName->has($name)) {
-                        $user = $usersByName->get($name);
+                    } elseif ($name && $usersByName->has(strtolower($name))) {
+                        $user = $usersByName->get(strtolower($name));
                     }
 
                     if (!$user) {
