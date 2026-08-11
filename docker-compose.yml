@@ -29,6 +29,23 @@ services:
     volumes:
       - ./backend:/var/www
 
+  scheduler:
+    build:
+      context: ./backend
+    container_name: mealbuddy-scheduler
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    env_file:
+      - ./backend/.env
+    environment:
+      - DB_HOST=postgres
+      - DOCKER_DB_USERNAME=mealbuddy
+      - DOCKER_DB_PASSWORD=strongpassword
+      - DB_DATABASE=mealbuddy
+    volumes:
+      - ./backend:/var/www
+    command: php artisan schedule:work
 
   frontend:
     build:
