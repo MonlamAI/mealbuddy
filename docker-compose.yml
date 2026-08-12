@@ -45,7 +45,7 @@ services:
       - DB_DATABASE=mealbuddy
     volumes:
       - ./backend:/var/www
-    command: php artisan schedule:work
+    command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction & sleep 60; done"
 
   frontend:
     build:
