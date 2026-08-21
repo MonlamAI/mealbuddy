@@ -237,7 +237,7 @@ export default function UserDashboard() {
                                                     {activity.status === 'opted_in' ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{activity.status === 'opted_in' ? t('im_joining') : t('skip_today')}</p>
+                                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200">{activity.status === 'opted_in' ? t('history_joined_lunch') : t('history_skipped_lunch')}</p>
                                                     <p className="text-[10px] text-slate-400 dark:text-slate-400">
                                                         {new Date(activity.lunch_day.lunch_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                     </p>

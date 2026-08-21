@@ -40,7 +40,7 @@ class MonthlyBillingService
             ->groupBy('user_id');
 
         $activeUsers = User::where('is_active', true)
-            ->whereIn('role', ['employee', 'chef', 'accountant'])
+            ->whereIn('role', ['employee', 'chef', 'accountant', 'admin'])
             ->get();
 
         $results = collect();
@@ -148,7 +148,7 @@ class MonthlyBillingService
             ]);
 
             $activeUsers = User::where('is_active', true)
-                ->whereIn('role', ['employee', 'chef', 'accountant'])
+                ->whereIn('role', ['employee', 'chef', 'accountant', 'admin'])
                 ->get(['id']);
 
             foreach ($activeUsers as $user) {
