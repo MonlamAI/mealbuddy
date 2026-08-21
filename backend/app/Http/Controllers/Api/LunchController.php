@@ -423,7 +423,7 @@ class LunchController extends Controller
         }
 
         // Get employees
-        $employees = User::whereIn('role', ['employee', 'chef', 'accountant'])->where('is_active', true)->get();
+        $employees = User::whereIn('role', ['employee', 'chef', 'accountant', 'admin'])->where('is_active', true)->get();
         $totalEmployees = $employees->count();
 
         // Calculate today's stats and participation details
@@ -515,7 +515,7 @@ class LunchController extends Controller
 
         // Weekly joining (last 5 days)
         $chartData = [];
-        $totalEmployeesCount = User::whereIn('role', ['employee', 'chef', 'accountant'])->where('is_active', true)->count();
+        $totalEmployeesCount = User::whereIn('role', ['employee', 'chef', 'accountant', 'admin'])->where('is_active', true)->count();
 
         for ($i = 4; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
@@ -565,7 +565,7 @@ class LunchController extends Controller
         $year = (int) $request->query('year', Carbon::today()->year);
 
         $activeUsers = User::where('is_active', true)
-            ->whereIn('role', ['employee', 'chef', 'accountant'])
+            ->whereIn('role', ['employee', 'chef', 'accountant', 'admin'])
             ->get();
 
         if ($type === 'daily') {
