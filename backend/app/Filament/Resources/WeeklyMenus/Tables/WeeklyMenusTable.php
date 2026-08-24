@@ -22,7 +22,7 @@ class WeeklyMenusTable
                     ->searchable()
                     ->sortable(),
                 ImageColumn::make('image_url')
-                    ->disk(config('filesystems.bills_disk', 'bills'))
+                    ->disk(config('filesystems.default', 'public'))
                     ->circular(),
             ])
             ->filters([
