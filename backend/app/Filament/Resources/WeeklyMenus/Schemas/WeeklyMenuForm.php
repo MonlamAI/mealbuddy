@@ -26,7 +26,7 @@ class WeeklyMenuForm
                 TextInput::make('title')
                     ->required(),
                 FileUpload::make('image_url')
-                    ->disk(config('filesystems.default', 'public'))
+                    ->disk('public')
                     ->directory('weekly-menus')
                     ->image()
                     ->imageEditor()

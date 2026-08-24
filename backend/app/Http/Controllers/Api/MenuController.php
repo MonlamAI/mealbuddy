@@ -12,7 +12,7 @@ class MenuController extends Controller
 {
     private function menuDisk(): string
     {
-        return config('filesystems.default', 'public');
+        return 'public';
     }
 
 

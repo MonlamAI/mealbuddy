@@ -19,7 +19,7 @@ class WeeklyMenuResource extends JsonResource
 
         if ($imageUrl !== null && $imageUrl !== '') {
             if (!str_starts_with($imageUrl, 'http://') && !str_starts_with($imageUrl, 'https://') && !str_starts_with($imageUrl, 'data:')) {
-                $disk = config('filesystems.default', 'public');
+                $disk = 'public';
                 $storage = Storage::disk($disk);
 
                 try {
