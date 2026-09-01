@@ -162,7 +162,7 @@ export default function ChefDashboard() {
             }
         }
 
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('user');
         if (!token) {
             router.push('/login');
             return;
@@ -236,12 +236,13 @@ export default function ChefDashboard() {
         const status = choice === 'yes' ? 'opted_in' : 'opted_out';
 
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('user');
             const res = await fetch(apiUrl('/v1/poll'), {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    ...authHeaders(),
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     lunch_day_id: todayPoll.lunch_day_id,
@@ -298,11 +299,12 @@ export default function ChefDashboard() {
         if (!broadcastMessage.trim()) return;
         setIsBroadcasting(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('user');
             const res = await fetch(apiUrl('/v1/broadcasts'), {
                 method: 'POST',
                 headers: {
-                    ...authHeaders(),
+                    credentials: 'include',
+          ...authHeaders(),
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ message: broadcastMessage, type: 'info' })
@@ -347,7 +349,6 @@ export default function ChefDashboard() {
             </div>
 
             <Header user={user} onLogout={() => {
-                localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 router.push('/');
             }} onNavigateHome={() => router.push('/')} />

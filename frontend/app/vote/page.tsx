@@ -87,16 +87,16 @@ export default function LunchVotePage() {
   const fetchCalendar = async (year: number, month: number) => {
     setIsCalendarLoading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('user');
       if (!token) return;
       const res = await fetch(apiUrl(`/v1/calendar-poll?year=${year}&month=${month}`), {
-        headers: authHeaders()
+        credentials: 'include',
+                    headers: authHeaders()
       });
       if (res.ok) {
         const data = await res.json();
         setCalendarDays(data.days);
       } else if (res.status === 401) {
-        localStorage.removeItem('token');
         localStorage.removeItem('user');
         router.push('/login');
       }
@@ -121,11 +121,12 @@ export default function LunchVotePage() {
     setCalendarDays(prev => prev.map(d => d.date === day.date ? { ...d, status: nextStatus } : d));
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('user');
       const res = await fetch(apiUrl('/v1/calendar-poll/batch'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          credentials: 'include',
           ...authHeaders()
         },
         body: JSON.stringify({
@@ -157,11 +158,12 @@ export default function LunchVotePage() {
     setCalendarDays(prev => prev.map(d => dates.includes(d.date) ? { ...d, status } : d));
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('user');
       const res = await fetch(apiUrl('/v1/calendar-poll/batch'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          credentials: 'include',
           ...authHeaders()
         },
         body: JSON.stringify({
@@ -283,11 +285,12 @@ export default function LunchVotePage() {
     // Fetch Today's Poll Status
     const fetchTodayPoll = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('user');
         if (!token) return; // Wait for auth check to redirect
 
         const res = await fetch(apiUrl('/v1/today-poll'), {
-          headers: authHeaders()
+          credentials: 'include',
+                    headers: authHeaders()
         });
 
         if (res.ok) {
@@ -308,7 +311,6 @@ export default function LunchVotePage() {
             setIsDeadlineMet(true);
           }
         } else if (res.status === 401) {
-          localStorage.removeItem('token');
           localStorage.removeItem('user');
           router.push('/login');
         }
@@ -324,7 +326,7 @@ export default function LunchVotePage() {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('user');
     if (!token) {
       router.push('/login');
       return;
@@ -347,13 +349,14 @@ export default function LunchVotePage() {
     setAttendance(choice); // Optimistic update
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('user');
       const status = choice === 'yes' ? 'opted_in' : 'opted_out';
 
       const res = await fetch(apiUrl('/v1/poll'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          credentials: 'include',
           ...authHeaders()
         },
         body: JSON.stringify({
@@ -378,7 +381,6 @@ export default function LunchVotePage() {
     <div className="min-h-screen bg-background font-sans text-foreground selection:bg-[#2E5A88]/10">
 
       <Header user={user} onLogout={() => {
-        localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);
         router.push('/');

@@ -16,6 +16,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage, LanguageSwitcher } from '@/components/providers/language-provider';
 import { ThemeSwitcher } from '@/components/providers/theme-provider';
+import { apiUrl, authHeaders } from '@/lib/api-url';
 
 interface HeaderProps {
     user?: any;
@@ -64,10 +65,11 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
     useEffect(() => {
         const fetchBroadcasts = async () => {
             try {
-                const token = localStorage.getItem('token');
+                const token = localStorage.getItem('user');
                 if (!token) return;
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/broadcasts`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const res = await fetch(apiUrl('/v1/broadcasts'), {
+                    credentials: 'include',
+                    headers: authHeaders()
                 });
                 if (res.ok) {
                     const data = await res.json();
@@ -90,12 +92,13 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
     const handleMarkAsRead = async (e: React.MouseEvent, id: number) => {
         e.stopPropagation();
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('user');
             setBroadcasts(prev => prev.map(b => b.id === id ? { ...b, is_read: true } : b));
 
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/broadcasts/${id}/read`, {
+            await fetch(apiUrl(`/v1/broadcasts/${id}/read`), {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: 'include',
+                headers: authHeaders()
             });
         } catch (err) {
             console.error("Failed to mark as read", err);
@@ -139,7 +142,6 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
     }, [currentUser]);
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
         localStorage.removeItem('user');
         setCurrentUser(null);
         setIsSidebarOpen(false);

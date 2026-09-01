@@ -15,7 +15,7 @@ export default function BillingPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('user');
         if (!token) {
             router.push('/login');
             return;
@@ -43,7 +43,6 @@ export default function BillingPage() {
     return (
         <div className="min-h-screen bg-background text-foreground font-sans">
             <Header user={user} onLogout={() => {
-                localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 router.push('/');
             }} onNavigateHome={() => router.push('/')} />

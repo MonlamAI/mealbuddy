@@ -28,6 +28,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
     $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+    $middleware->api(prepend: [
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+    ]);
+
     $middleware->web(append: [
         HandleAppearance::class,
         HandleInertiaRequests::class,

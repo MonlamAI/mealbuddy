@@ -48,7 +48,6 @@ export default function AuthPage() {
         });
 
         const { access_token, user } = response.data;
-        localStorage.setItem("token", access_token);
         localStorage.setItem("user", JSON.stringify(user));
 
         if (user.role === 'chef') {
@@ -65,7 +64,6 @@ export default function AuthPage() {
         });
 
         const { access_token, user } = response.data;
-        localStorage.setItem("token", access_token);
         localStorage.setItem("user", JSON.stringify(user));
 
         if (user.role === 'chef') {
@@ -248,7 +246,7 @@ export default function AuthPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center px-1">
                       <label className="text-xs font-black uppercase tracking-[0.1em] text-gray-400">{t('password')}</label>
-                      <button className="text-sm font-bold text-[#2E5A88] hover:underline decoration-2 underline-offset-4">{t('forgot_password')}</button>
+                      <button type="button" onClick={() => router.push('/forgot-password')} className="text-sm font-bold text-[#2E5A88] hover:underline decoration-2 underline-offset-4">{t('forgot_password')}</button>
                     </div>
                     <div className="relative group">
                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2E5A88] transition-colors" size={20} />

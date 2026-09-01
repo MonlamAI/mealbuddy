@@ -28,6 +28,7 @@ import {
   PaymentStatus,
   updateUserBillPayment,
   UserMonthlyBill,
+  authHeaders,
 } from '@/lib/billing';
 import { useToast } from '@/components/providers/toast-provider';
 import { useLanguage, toTibetanDigits } from '@/components/providers/language-provider';
@@ -209,7 +210,7 @@ export default function AccountantBillingPanel() {
     setReportLoading(true);
     setReportData(null);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('user');
       if (!token) return;
 
       let url = `${process.env.NEXT_PUBLIC_API_URL || ''}/v1/accountant/participation-report?type=${participationView}`;
@@ -220,10 +221,11 @@ export default function AccountantBillingPanel() {
       }
 
       const res = await fetch(url, {
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
+          ...authHeaders(),
+          'Accept': 'application/json',
+        },
       });
 
       if (res.ok) {

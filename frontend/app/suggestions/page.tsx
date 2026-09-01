@@ -6,6 +6,7 @@ import Header from '@/components/header';
 import { MessageSquare, ThumbsUp, Plus, ChefHat, Check, X, Award } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { apiUrl, authHeaders } from '@/lib/api-url';
 
 export default function SuggestionsPage() {
     const { t } = useLanguage();
@@ -32,9 +33,10 @@ export default function SuggestionsPage() {
 
     const fetchSuggestions = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/suggestions`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const token = localStorage.getItem('user');
+            const res = await fetch(apiUrl('/v1/suggestions'), {
+                credentials: 'include',
+                headers: authHeaders()
             });
             if (res.ok) {
                 const data = await res.json();
@@ -49,7 +51,7 @@ export default function SuggestionsPage() {
 
     const handleUpvote = async (id: number) => {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('user');
             // Optimistic update
             setSuggestions(prev => prev.map(s => {
                 if (s.id === id) {
@@ -63,9 +65,10 @@ export default function SuggestionsPage() {
                 return s;
             }));
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/suggestions/${id}/vote`, {
+            const res = await fetch(apiUrl(`/v1/suggestions/${id}/vote`), {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
+                credentials: 'include',
+                headers: authHeaders()
             });
             if (!res.ok) {
                 // Revert on error
@@ -79,11 +82,12 @@ export default function SuggestionsPage() {
 
     const handleStatusChange = async (id: number, status: string) => {
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/suggestions/${id}/status`, {
+            const token = localStorage.getItem('user');
+            const res = await fetch(apiUrl(`/v1/suggestions/${id}/status`), {
                 method: 'PATCH',
+                credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    ...authHeaders(),
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ status })
@@ -99,12 +103,11 @@ export default function SuggestionsPage() {
     const handleDelete = async (id: number) => {
         if (!confirm('Are you sure you want to delete this suggestion?')) return;
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/suggestions/${id}`, {
+            const token = localStorage.getItem('user');
+            const res = await fetch(apiUrl(`/v1/suggestions/${id}`), {
                 method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                credentials: 'include',
+                headers: authHeaders()
             });
             if (res.ok) {
                 setSuggestions(prev => prev.filter(s => s.id !== id));
@@ -118,11 +121,12 @@ export default function SuggestionsPage() {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/suggestions`, {
+            const token = localStorage.getItem('user');
+            const res = await fetch(apiUrl('/v1/suggestions'), {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    ...authHeaders(),
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ title, description })

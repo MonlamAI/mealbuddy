@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Auth\Notifications\ResetPassword;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,6 +36,11 @@ class AppServiceProvider extends ServiceProvider
     {
         Gate::policy(MonthlyBill::class, MonthlyBillPolicy::class);
         Gate::policy(UserMonthlyBill::class, UserMonthlyBillPolicy::class);
+
+        ResetPassword::createUrlUsing(function ($notifiable, string $token) {
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
+            return "{$frontendUrl}/reset-password?token={$token}&email={$notifiable->getEmailForPasswordReset()}";
+        });
 
         $this->configureDefaults();
     }

@@ -82,6 +82,7 @@ export default function UserDashboard() {
         const fetchActivity = async () => {
             try {
                 const res = await fetch(apiUrl('/v1/user/activity?limit=3'), {
+                    credentials: 'include',
                     headers: authHeaders()
                 });
                 if (res.ok) {
@@ -98,6 +99,7 @@ export default function UserDashboard() {
         const fetchStats = async () => {
             try {
                 const res = await fetch(apiUrl('/v1/user/stats'), {
+                    credentials: 'include',
                     headers: authHeaders()
                 });
                 if (res.ok) {
@@ -130,7 +132,6 @@ export default function UserDashboard() {
             </div>
 
             <Header user={user} onLogout={() => {
-                localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 router.push('/');
             }} onNavigateHome={() => router.push('/')} />
