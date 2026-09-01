@@ -7,7 +7,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY frontend ./frontend
 COPY backend ./backend
 
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10.33.3
 
 RUN pnpm install
 
