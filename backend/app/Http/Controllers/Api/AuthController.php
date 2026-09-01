@@ -6,7 +6,9 @@ use App\Concerns\PasswordValidationRules;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
 use Illuminate\Support\Facades\Storage;
@@ -27,53 +29,50 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => $passwordRules,
-            'role' => 'nullable|string|in:employee,chef,accountant',
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role ?? 'employee',
+            'role' => 'employee',
             'is_active' => true,
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        Auth::guard('web')->login($user);
+        $request->session()->regenerate();
 
         return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
             'user' => $user,
         ]);
     }
 
     public function login(Request $request)
     {
-        $request->validate([
+        $credentials = $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        if (Auth::guard('web')->attempt($credentials)) {
+            $request->session()->regenerate();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+            return response()->json([
+                'user' => Auth::guard('web')->user(),
             ]);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user,
+        throw ValidationException::withMessages([
+            'email' => ['The provided credentials are incorrect.'],
         ]);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->json([
             'message' => 'Successfully logged out',
@@ -124,5 +123,42 @@ class AuthController extends Controller
             'message' => 'Profile updated successfully',
             'user' => $user->fresh(),
         ]);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $status = Password::broker()->sendResetLink(
+            $request->only('email')
+        );
+
+        return $status === Password::RESET_LINK_SENT
+                    ? response()->json(['message' => __($status)])
+                    : response()->json(['message' => __($status)], 400);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $status = Password::broker()->reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->setRememberToken(\Illuminate\Support\Str::random(60));
+
+                $user->save();
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+                    ? response()->json(['message' => __($status)])
+                    : response()->json(['message' => __($status)], 400);
     }
 }

@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class UserMonthlyBill extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         'monthly_bill_id',
         'user_id',
@@ -15,6 +18,14 @@ class UserMonthlyBill extends Model
         'payment_status',
         'paid_at',
     ];
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected function casts(): array
     {

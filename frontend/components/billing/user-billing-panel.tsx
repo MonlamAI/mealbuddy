@@ -85,7 +85,7 @@ export default function UserBillingPanel() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('user');
     if (!token) {
       setLoading(false);
       return;

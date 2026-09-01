@@ -27,7 +27,7 @@ export default function ActivityHistoryPage() {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const token = localStorage.getItem('token');
+                const token = localStorage.getItem('user');
                 // Check if user is logged in
                 if (!token) {
                     router.push('/login');
@@ -35,6 +35,7 @@ export default function ActivityHistoryPage() {
                 }
 
                 const res = await fetch(apiUrl('/v1/user/activity'), {
+                    credentials: 'include',
                     headers: authHeaders()
                 });
 

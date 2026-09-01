@@ -55,7 +55,6 @@ export default function HomePage() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
     router.refresh();

@@ -22,6 +22,12 @@ Route::prefix('v1')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])
         ->middleware('throttle:5,1');
 
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])
+        ->middleware('throttle:5,1');
+
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])
+        ->middleware('throttle:5,1');
+
     /*
     |--------------------------------------------------------------------------
     | Public Routes
@@ -36,7 +42,7 @@ Route::prefix('v1')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
 
         // Auth User
         Route::get('/user', [AuthController::class, 'user']);
@@ -63,7 +69,7 @@ Route::prefix('v1')->group(function () {
         |--------------------------------------------------------------------------
         */
 
-        Route::post('/poll', [LunchController::class, 'poll']);
+        Route::post('/poll', [LunchController::class, 'poll'])->middleware('throttle:10,1');
 
         /*
         |--------------------------------------------------------------------------
@@ -77,7 +83,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/user/stats', [LunchController::class, 'userStats']);
         Route::get('/today-poll', [LunchController::class, 'todayPoll']);
         Route::get('/calendar-poll', [LunchController::class, 'calendarPoll']);
-        Route::post('/calendar-poll/batch', [LunchController::class, 'batchPoll']);
+        Route::post('/calendar-poll/batch', [LunchController::class, 'batchPoll'])->middleware('throttle:10,1');
 
         /*
         |--------------------------------------------------------------------------
@@ -118,6 +124,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/monthly-bills', [MonthlyBillController::class, 'index']);
         Route::post('/monthly-bills', [MonthlyBillController::class, 'store']);
         Route::get('/monthly-bills/{monthlyBill}', [MonthlyBillController::class, 'show']);
+        Route::get('/monthly-bills/{monthlyBill}/logs', [\App\Http\Controllers\Api\AuditLogController::class, 'monthlyBillLogs']);
         Route::patch('/monthly-bills/{monthlyBill}/user-bills/{userMonthlyBill}', [MonthlyBillController::class, 'updatePayment']);
         Route::delete('/monthly-bills/{monthlyBill}', [MonthlyBillController::class, 'destroy']);
 
@@ -128,9 +135,9 @@ Route::prefix('v1')->group(function () {
         */
 
         Route::get('/suggestions', [\App\Http\Controllers\Api\SuggestionController::class, 'index']);
-        Route::post('/suggestions', [\App\Http\Controllers\Api\SuggestionController::class, 'store']);
-        Route::post('/suggestions/{id}/vote', [\App\Http\Controllers\Api\SuggestionController::class, 'toggleVote']);
-        Route::patch('/suggestions/{id}/status', [\App\Http\Controllers\Api\SuggestionController::class, 'updateStatus']);
+        Route::post('/suggestions', [\App\Http\Controllers\Api\SuggestionController::class, 'store'])->middleware('throttle:10,1');
+        Route::post('/suggestions/{id}/vote', [\App\Http\Controllers\Api\SuggestionController::class, 'toggleVote'])->middleware('throttle:30,1');
+        Route::patch('/suggestions/{id}/status', [\App\Http\Controllers\Api\SuggestionController::class, 'updateStatus'])->middleware('throttle:10,1');
         Route::delete('/suggestions/{id}', [\App\Http\Controllers\Api\SuggestionController::class, 'destroy']);
     });
 });

@@ -77,14 +77,30 @@ export function monthLabel(month: number, year: number): string {
   });
 }
 
+export function getXsrfToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  const match = document.cookie.match(new RegExp('(^| )XSRF-TOKEN=([^;]+)'));
+  if (match) {
+    return decodeURIComponent(match[2]);
+  }
+  return null;
+}
+
 export function authHeaders(): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  
+  const token = getXsrfToken();
+  if (token) {
+    headers['X-XSRF-TOKEN'] = token;
+  }
+  
+  return headers;
 }
 
 export async function fetchMonthlyBill(id: number): Promise<MonthlyBill> {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/monthly-bills/${id}`, {
-    headers: authHeaders(),
+    credentials: 'include',
+                    headers: authHeaders(),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -100,7 +116,8 @@ export async function fetchMonthlyBills(month?: number, year?: number): Promise<
   if (year) params.set('year', String(year));
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL || ''}/v1/monthly-bills?${params.toString()}`,
-    { headers: authHeaders() }
+    { credentials: 'include',
+                    headers: authHeaders() }
   );
   if (!res.ok) throw new Error('Failed to load monthly bills');
   const json = await res.json();
@@ -110,7 +127,8 @@ export async function fetchMonthlyBills(month?: number, year?: number): Promise<
 export async function createMonthlyBill(formData: FormData): Promise<MonthlyBill> {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/monthly-bills`, {
     method: 'POST',
-    headers: authHeaders(),
+    credentials: 'include',
+                    headers: authHeaders(),
     body: formData,
   });
   const json = await res.json().catch(() => ({}));
@@ -127,8 +145,9 @@ export async function updateUserBillPayment(
     `${process.env.NEXT_PUBLIC_API_URL || ''}/v1/monthly-bills/${monthlyBillId}/user-bills/${userBillId}`,
     {
       method: 'PATCH',
+      credentials: 'include',
       headers: {
-        ...authHeaders(),
+          ...authHeaders(),
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
@@ -147,12 +166,13 @@ const emptyUserBilling: UserBillingResponse = {
 };
 
 export async function fetchUserBilling(): Promise<UserBillingResponse> {
-  const headers = authHeaders();
-  if (!('Authorization' in headers)) {
+  if (typeof window !== 'undefined' && !localStorage.getItem('user')) {
     return emptyUserBilling;
   }
 
+  const headers = authHeaders();
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/user/monthly-bills`, {
+    credentials: 'include',
     headers,
   });
 
@@ -175,7 +195,8 @@ export async function fetchUserBilling(): Promise<UserBillingResponse> {
 export async function deleteMonthlyBill(id: number): Promise<void> {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/v1/monthly-bills/${id}`, {
     method: 'DELETE',
-    headers: authHeaders(),
+    credentials: 'include',
+                    headers: authHeaders(),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

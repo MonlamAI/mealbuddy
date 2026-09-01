@@ -37,7 +37,7 @@ export default function ProfilePage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('user');
         const savedUser = localStorage.getItem('user');
 
         if (!token || !savedUser) {
@@ -86,7 +86,7 @@ export default function ProfilePage() {
 
         setSaving(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('user');
             const formData = new FormData();
             formData.append('name', name);
             formData.append('name_bo', nameBo);
@@ -100,6 +100,7 @@ export default function ProfilePage() {
 
             const res = await fetch(apiUrl('/v1/user/profile'), {
                 method: 'POST',
+                credentials: 'include',
                 headers: authHeaders(true),
                 body: formData
             });
@@ -149,7 +150,6 @@ export default function ProfilePage() {
             </div>
 
             <Header user={user} onLogout={() => {
-                localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 router.push('/');
             }} onNavigateHome={() => router.push('/')} />

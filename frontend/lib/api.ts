@@ -8,14 +8,7 @@ export const api = axios.create({
   },
 });
 
-api.interceptors.request.use((config) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
+// Interceptors removed in favor of stateful cookie auth
 export async function getCsrfCookie() {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "");
   await axios.get(`${baseUrl}/sanctum/csrf-cookie`, { withCredentials: true });

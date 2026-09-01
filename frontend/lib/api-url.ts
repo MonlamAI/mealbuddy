@@ -6,14 +6,25 @@ export function apiUrl(path: string): string {
   return `${base}${normalized}`;
 }
 
+export function getXsrfToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  const match = document.cookie.match(new RegExp('(^| )XSRF-TOKEN=([^;]+)'));
+  if (match) {
+    return decodeURIComponent(match[2]);
+  }
+  return null;
+}
+
 export function authHeaders(json = true): HeadersInit {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const headers: Record<string, string> = {};
   if (json) {
     headers['Accept'] = 'application/json';
   }
+  
+  const token = getXsrfToken();
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers['X-XSRF-TOKEN'] = token;
   }
+  
   return headers;
 }
