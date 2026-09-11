@@ -29,13 +29,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "MealBuddy | Office Lunch Management",
+  title: "Mealbuddy",
   description: "Office cafeteria lunch management and billing",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "MealBuddy | Office Lunch Management",
+    title: "Mealbuddy",
   },
   formatDetection: {
     telephone: false,
