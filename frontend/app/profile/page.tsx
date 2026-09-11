@@ -3,11 +3,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Camera, Save, User, Sparkles, Utensils, Leaf, Drumstick } from 'lucide-react';
+import { ArrowLeft, Camera, Save, User, Sparkles, Utensils, Leaf, Drumstick, Bell, Send, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '@/components/providers/language-provider';
 import { useToast } from '@/components/providers/toast-provider';
 import Header from '@/components/header';
 import { apiUrl, authHeaders } from '@/lib/api-url';
+import {
+    isPushNotificationSupported,
+    getNotificationPermission,
+    getCurrentPushSubscription,
+    subscribeToPushNotifications,
+    unsubscribeFromPushNotifications,
+    triggerTestPushNotification,
+} from '@/lib/push-notifications';
 
 const GlassCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
     <div className={`bg-white/70 dark:bg-[#1E1E1E]/40 backdrop-blur-xl border border-white/25 dark:border-white/5 rounded-3xl shadow-xl ${className}`}>
@@ -35,6 +43,62 @@ export default function ProfilePage() {
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Push notification state
+    const [pushStatus, setPushStatus] = useState<'loading' | 'subscribed' | 'unsubscribed' | 'denied' | 'unsupported'>('loading');
+    const [pushLoading, setPushLoading] = useState(false);
+    const [testLoading, setTestLoading] = useState(false);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (!isPushNotificationSupported()) {
+            setPushStatus('unsupported');
+            return;
+        }
+        if (Notification.permission === 'denied') {
+            setPushStatus('denied');
+            return;
+        }
+        getCurrentPushSubscription().then((sub) => {
+            setPushStatus(sub ? 'subscribed' : 'unsubscribed');
+        });
+    }, []);
+
+    const handleTogglePush = async () => {
+        setPushLoading(true);
+        if (pushStatus === 'subscribed') {
+            const res = await unsubscribeFromPushNotifications();
+            if (res.success) {
+                setPushStatus('unsubscribed');
+                showToast(t('push_disabled_success'), 'success');
+            } else {
+                showToast(res.error || 'Failed to unsubscribe', 'error');
+            }
+        } else {
+            const res = await subscribeToPushNotifications();
+            if (res.success) {
+                setPushStatus('subscribed');
+                showToast(t('push_enabled_success'), 'success');
+            } else {
+                if (Notification.permission === 'denied') {
+                    setPushStatus('denied');
+                }
+                showToast(res.error || t('push_permission_denied'), 'error');
+            }
+        }
+        setPushLoading(false);
+    };
+
+    const handleTestPush = async () => {
+        setTestLoading(true);
+        const res = await triggerTestPushNotification();
+        setTestLoading(false);
+        if (res.success) {
+            showToast(t('push_test_success'), 'success');
+        } else {
+            showToast(res.error || 'Failed to send test reminder', 'error');
+        }
+    };
 
     useEffect(() => {
         const token = localStorage.getItem('user');
@@ -328,6 +392,90 @@ export default function ProfilePage() {
                             )}
                         </button>
                     </form>
+                </GlassCard>
+
+                {/* Push Notifications Card */}
+                <GlassCard className="p-6 sm:p-8 mt-6">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                <Bell size={20} />
+                            </div>
+                            <div>
+                                <h3 className="text-base sm:text-lg font-bold text-foreground">
+                                    {t('push_notifications')}
+                                </h3>
+                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-lg leading-relaxed">
+                                    {t('push_reminders_desc')}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className="shrink-0">
+                            {pushStatus === 'subscribed' && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                    <CheckCircle2 size={13} />
+                                    <span>{t('push_subscribed')}</span>
+                                </span>
+                            )}
+                            {pushStatus === 'unsubscribed' && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20">
+                                    <span>{t('push_not_subscribed')}</span>
+                                </span>
+                            )}
+                            {pushStatus === 'denied' && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                                    <span>{t('push_permission_denied')}</span>
+                                </span>
+                            )}
+                            {pushStatus === 'unsupported' && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-500/10 text-slate-500 border border-slate-500/20">
+                                    <span>{t('push_unsupported')}</span>
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Action Controls */}
+                    <div className="mt-6 pt-6 border-t border-slate-200/50 dark:border-white/5 flex flex-wrap items-center gap-3">
+                        {pushStatus !== 'unsupported' && pushStatus !== 'denied' && (
+                            <button
+                                type="button"
+                                onClick={handleTogglePush}
+                                disabled={pushLoading}
+                                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                                    pushStatus === 'subscribed'
+                                        ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 border border-rose-500/20'
+                                        : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20'
+                                }`}
+                            >
+                                {pushLoading
+                                    ? t('saving')
+                                    : pushStatus === 'subscribed'
+                                    ? t('push_disable_button')
+                                    : t('push_enable_button')}
+                            </button>
+                        )}
+
+                        {pushStatus === 'subscribed' && (
+                            <button
+                                type="button"
+                                onClick={handleTestPush}
+                                disabled={testLoading}
+                                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-foreground transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border border-slate-200 dark:border-white/10"
+                            >
+                                <Send size={14} />
+                                <span>{testLoading ? t('saving') : t('push_test_button')}</span>
+                            </button>
+                        )}
+
+                        {pushStatus === 'denied' && (
+                            <p className="text-xs text-rose-500 font-medium">
+                                {t('push_permission_denied')}
+                            </p>
+                        )}
+                    </div>
                 </GlassCard>
             </main>
         </div>

@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('lunch:sync-leaves')->dailyAt('09:00');
+Schedule::command('lunch:send-reminders')->weekdays()->at('09:00');

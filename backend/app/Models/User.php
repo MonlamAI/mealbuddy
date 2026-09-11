@@ -80,6 +80,11 @@ class User extends Authenticatable
         return $this->hasMany(MonthlyBill::class, 'uploaded_by');
     }
 
+    public function pushSubscriptions()
+    {
+        return $this->hasMany(PushSubscription::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Attribute Casting

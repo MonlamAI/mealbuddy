@@ -1,23 +1,47 @@
 # Dependencies
 node_modules/
+vendor/
 
-# Environment
+# Environment files (all environments and subdirectories)
 .env
-.env.backup
-.env.production
-.env.local
+.env.*
+.env*.local
+*.env
+*.env.*
 !.env.example
+!*.env.example
 
-# OS / editors
+# OS & Editor artifacts
 .DS_Store
+Thumbs.db
 /.fleet
 /.idea
 /.nova
 /.vscode
 /.zed
 .cursor/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 agents.md
 claude.md
+
+# Sensitive keys & certificates
+*.pem
+*.key
+*.cert
+*.crt
+id_rsa*
+id_ed25519*
+
+# Logs & Debugging
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Backend (Laravel)
 backend/vendor/
@@ -29,6 +53,18 @@ backend/public/hot
 backend/public/storage
 backend/storage/*.key
 backend/storage/pail
+backend/storage/logs/*.log
+backend/storage/framework/cache/*
+!backend/storage/framework/cache/.gitignore
+backend/storage/framework/sessions/*
+!backend/storage/framework/sessions/.gitignore
+backend/storage/framework/views/*
+!backend/storage/framework/views/.gitignore
+backend/storage/app/bills/*
+backend/storage/app/public/avatars/*
+backend/storage/app/public/weekly-menus/*
+backend/bootstrap/cache/*.php
+!backend/bootstrap/cache/.gitignore
 backend/bootstrap/ssr
 backend/resources/js/actions
 backend/resources/js/routes
@@ -36,9 +72,11 @@ backend/resources/js/wayfinder
 backend/Homestead.json
 backend/Homestead.yaml
 backend/auth.json
-backend/npm-debug.log
-backend/yarn-error.log
 
 # Frontend (Next.js)
 frontend/.next/
 frontend/out/
+frontend/build/
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+
