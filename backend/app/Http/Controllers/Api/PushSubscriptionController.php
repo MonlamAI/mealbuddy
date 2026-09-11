@@ -22,7 +22,8 @@ class PushSubscriptionController extends Controller
      */
     public function getVapidPublicKey(): JsonResponse
     {
-        $publicKey = config('services.webpush.vapid_public_key', env('VAPID_PUBLIC_KEY'));
+        $rawKey = config('services.webpush.vapid_public_key', env('VAPID_PUBLIC_KEY'));
+        $publicKey = $rawKey ? trim($rawKey, " \"'") : null;
 
         return response()->json([
             'vapid_public_key' => $publicKey,
@@ -43,22 +44,32 @@ class PushSubscriptionController extends Controller
         ]);
 
         $user = $request->user();
+        if (! $user) {
+            return response()->json(['error' => 'Unauthenticated.'], 401);
+        }
 
-        $subscription = PushSubscription::updateOrCreate(
-            ['endpoint' => $request->input('endpoint')],
-            [
-                'user_id' => $user->id,
-                'public_key' => $request->input('keys.p256dh'),
-                'auth_token' => $request->input('keys.auth'),
-                'content_encoding' => $request->input('content_encoding', 'aes128gcm'),
-                'locale' => $request->input('locale', 'bo'),
-            ]
-        );
+        try {
+            $subscription = PushSubscription::updateOrCreate(
+                ['endpoint' => $request->input('endpoint')],
+                [
+                    'user_id' => $user->id,
+                    'public_key' => $request->input('keys.p256dh'),
+                    'auth_token' => $request->input('keys.auth'),
+                    'content_encoding' => $request->input('content_encoding', 'aes128gcm'),
+                    'locale' => $request->input('locale', 'bo'),
+                ]
+            );
 
-        return response()->json([
-            'message' => 'Push subscription saved successfully.',
-            'subscription' => $subscription,
-        ]);
+            return response()->json([
+                'message' => 'Push subscription saved successfully.',
+                'subscription' => $subscription,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('[PushSubscription] Store error: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Failed to save push subscription: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
