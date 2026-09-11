@@ -1,6 +1,6 @@
 // MealBuddy Production Service Worker
 // Cache Versioning
-const VERSION = 'v1';
+const VERSION = 'v2';
 const STATIC_CACHE = `mealbuddy-static-${VERSION}`;
 const ASSETS_CACHE = `mealbuddy-assets-${VERSION}`;
 const PAGES_CACHE = `mealbuddy-pages-${VERSION}`;
@@ -187,3 +187,57 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// Push Event: Handle incoming Web Push notifications (e.g. 9:00 AM Lunch Reminders)
+self.addEventListener('push', (event) => {
+  let data = {};
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = { title: '🍽️ ཟས་མཐུན་ལས་རོགས། - ཉིན་གུང་གི་དྲན་སྐུལ།', body: event.data.text() };
+    }
+  }
+
+  const title = data.title || '🍽️ ཟས་མཐུན་ལས་རོགས། - ཉིན་གུང་གི་དྲན་སྐུལ།';
+  const options = {
+    body:
+      data.body ||
+      'ཁྱེད་རང་དེ་རིང་ཉིན་གུང་ལ་མཉམ་ཞུགས་བྱེད་ཀྱི་ཡོད་དམ། གལ་ཏེ་མཉམ་ཞུགས་བྱེད་ཀྱི་མེད་ན་ཆུ་ཚོད་ ༡༠:༠༠ སྔོན་ལ་འདིར་ཐེངས་ཤིག་བསྣུན་ནས་ང་ཚོར་ཤེས་སུ་འཇུག་རོགས།',
+    icon: data.icon || '/icons/icon-192x192.png',
+    badge: data.badge || '/icons/icon-192x192.png',
+    tag: data.tag || 'mealbuddy-lunch-reminder',
+    renotify: true,
+    data: {
+      url: data.data?.url || data.url || '/vote',
+    },
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Notification Click Event: Navigate or focus on /vote
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const targetPath = event.notification.data?.url || '/vote';
+  const targetUrl = new URL(targetPath, self.location.origin).href;
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Check if MealBuddy window is already open
+      for (const client of clientList) {
+        if (client.url.startsWith(self.location.origin) && 'focus' in client) {
+          if ('navigate' in client && client.url !== targetUrl) {
+            return client.navigate(targetUrl).then((c) => (c ? c.focus() : client.focus()));
+          }
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+

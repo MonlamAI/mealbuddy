@@ -40,4 +40,10 @@ return [
         'url' => env('LEAVE_TRACKER_URL', 'https://portal.monlam.ai/api/v1/external/on-leave-today/'),
     ],
 
+    'webpush' => [
+        'vapid_public_key' => env('VAPID_PUBLIC_KEY'),
+        'vapid_private_key' => env('VAPID_PRIVATE_KEY'),
+        'vapid_subject' => env('VAPID_SUBJECT', 'mailto:admin@mealbuddy.monlam.ai'),
+    ],
+
 ];

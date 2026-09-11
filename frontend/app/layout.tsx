@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { PwaRegister } from "@/components/pwa/pwa-register";
 import { PwaInstallPrompt } from "@/components/pwa/pwa-install-prompt";
 import { NetworkStatusIndicator } from "@/components/pwa/network-status-indicator";
+import { PushNotificationBanner } from "@/components/pwa/push-notification-banner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -82,10 +83,13 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-300">
         <ThemeProvider>
           <LanguageProvider>
-            <ToastProvider>{children}</ToastProvider>
-            <NetworkStatusIndicator />
-            <PwaInstallPrompt />
-            <PwaRegister />
+            <ToastProvider>
+              {children}
+              <NetworkStatusIndicator />
+              <PwaInstallPrompt />
+              <PwaRegister />
+              <PushNotificationBanner />
+            </ToastProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

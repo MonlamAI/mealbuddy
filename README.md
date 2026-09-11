@@ -75,16 +75,24 @@ pnpm dev
 
 ### Backend (`backend/.env`)
 
-Defaults in `.env.example` match Docker Compose:
+Configure your environment variables by copying the example template:
 
-| Variable       | Default     |
-|----------------|-------------|
-| `DB_CONNECTION`| `pgsql`     |
-| `DB_HOST`      | `127.0.0.1` |
-| `DB_PORT`      | `5432`      |
-| `DB_DATABASE`  | `mealbuddy` |
-| `DB_USERNAME`  | `mealbuddy` |
-| `DB_PASSWORD`  | `secret`    |
+```bash
+cp backend/.env.example backend/.env
+php artisan key:generate
+```
+
+Key environment configuration:
+
+| Variable | Description |
+|---|---|
+| `APP_ENV` | `local` for development, `production` on server |
+| `APP_DEBUG` | `true` for development, `false` on server |
+| `DB_CONNECTION` | Database driver (`pgsql`) |
+| `DB_HOST` / `DB_PORT` | PostgreSQL host and port |
+| `DB_DATABASE` | Database name |
+| `DB_USERNAME` | Database username |
+| `DB_PASSWORD` | Strong password (configured in `.env`) |
 
 ### Frontend (`frontend/.env.local`)
 
@@ -119,8 +127,17 @@ PHPUnit uses in-memory SQLite (fast, no Docker required):
 cd backend && composer test
 ```
 
+## Security Best Practices
+
+- **Never commit `.env` files**: All sensitive secrets (database passwords, application keys, API keys) must remain in local/server `.env` files and never be checked into version control.
+- **Production settings**: Ensure `APP_ENV=production` and `APP_DEBUG=false` in production to prevent stack traces from leaking to users.
+- **Unique App Key**: Always run `php artisan key:generate` on initial setup so each environment uses its own unique cryptographic encryption key.
+- **CORS & Sanctum**: In production, restrict `SANCTUM_STATEFUL_DOMAINS` and CORS allowed origins (`config/cors.php`) strictly to your production domain (`meals.monlamit.com`).
+- **File Permissions**: Keep `backend/storage` and `backend/bootstrap/cache` writable only by the web server user (`www-data`).
+
 ## Notes
 
 - CORS and Sanctum allow `http://localhost:3000` (`backend/config/cors.php`, `backend/config/sanctum.php`).
 - Inertia pages under `backend/resources/js` are for Filament / legacy routes; the main app UI is in `frontend/`.
 - Change Postgres credentials in both root `.env` (Docker) and `backend/.env` (Laravel) if you customize them.
+

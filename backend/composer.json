@@ -14,6 +14,7 @@
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
+        "minishlink/web-push": "^11.0",
         "spatie/laravel-activitylog": "^4.12"
     },
     "require-dev": {

@@ -54,6 +54,16 @@ Route::prefix('v1')->group(function () {
 
         /*
         |--------------------------------------------------------------------------
+        | Web Push Subscriptions
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/push/vapid-key', [\App\Http\Controllers\Api\PushSubscriptionController::class, 'getVapidPublicKey']);
+        Route::post('/push-subscriptions', [\App\Http\Controllers\Api\PushSubscriptionController::class, 'store']);
+        Route::delete('/push-subscriptions', [\App\Http\Controllers\Api\PushSubscriptionController::class, 'destroy']);
+        Route::post('/push-subscriptions/test', [\App\Http\Controllers\Api\PushSubscriptionController::class, 'test']);
+
+        /*
+        |--------------------------------------------------------------------------
         | Lunch System
         |--------------------------------------------------------------------------
         */
