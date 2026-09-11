@@ -311,6 +311,20 @@ const translations = {
     dietary_preference: 'Dietary Preference',
     veg: 'Vegetarian',
     non_veg: 'Non-Vegetarian',
+
+    // PWA & Offline
+    install_mealbuddy: 'Install MealBuddy',
+    install_app_desc: 'Install MealBuddy on your device for quick access and a faster experience.',
+    add_to_home_screen: 'Add to Home Screen',
+    you_are_offline: "You're offline",
+    back_online: 'Back online',
+    try_again: 'Try Again',
+    new_version_available: 'New MealBuddy version available',
+    refresh: 'Refresh',
+    install_instructions_ios: 'To install: tap Share and select "Add to Home Screen"',
+    internet_connection_unavailable: 'Internet connection is unavailable. Live meal voting, menu updates, and billing cannot currently be loaded.',
+    offline_reconnect_prompt: 'Please reconnect to the internet and try again.',
+    dismiss: 'Dismiss',
   },
   bo: {
     app_title: 'ཟས་མཐུན་ལས་རོགས།',
@@ -616,6 +630,20 @@ const translations = {
     dietary_preference: 'དཀར་དམར་གྱི་འདེམས་ཀ།',
     veg: 'དཀར་ཟས།',
     non_veg: 'དམར་ཟས།',
+
+    // PWA & Offline
+    install_mealbuddy: 'MealBuddy གཏེགས་འཇུག་བྱོས།',
+    install_app_desc: 'མགྱོགས་མྱུར་སྤྱོད་བདེའི་ཆེད་ MealBuddy ཉེར་སྤྱོད་ཁྱེད་ཀྱི་ཁ་པར་ནང་གཏེགས་འཇུག་གནང་རོགས།',
+    add_to_home_screen: 'གཙོ་ངོས་སུ་སྣོན་པ།',
+    you_are_offline: 'དྲ་རྒྱའི་སྦྲེལ་མཐུད་མེད།',
+    back_online: 'དྲ་རྒྱའི་སྦྲེལ་མཐུད་སླར་གསོ་བྱུང་།',
+    try_again: 'བསྐྱར་དུ་འབད་བརྩོན་བྱོས།',
+    new_version_available: 'MealBuddy པར་གཞི་གསར་པ་འདུག',
+    refresh: 'གསར་བཅོས་བྱོས།',
+    install_instructions_ios: 'གཏེགས་འཇུག་བྱེད་པར། མཉམ་སྤྱོད་ (Share) མནན་ཏེ་ "གཙོ་ངོས་སུ་སྣོན་པ་" (Add to Home Screen) འདེམས་རོགས།',
+    internet_connection_unavailable: 'དྲ་རྒྱའི་སྦྲེལ་མཐུད་མི་འདུག ཉིན་ཟས་འོས་བསྡུ་དང་རྩིས་ཁྲ་སོགས་དྲ་ཐོག་གི་གནས་ཚུལ་རྣམས་ལྟ་མི་ཐུབ།',
+    offline_reconnect_prompt: 'དྲ་རྒྱ་ལ་སླར་སྦྲེལ་མཐུད་གནང་རྗེས་བསྐྱར་དུ་འབད་བརྩོན་བྱོས།',
+    dismiss: 'སྣང་མེད་གཏོང་བ།',
   }
 };
 
@@ -666,7 +694,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const t = (key: string, replacements?: Record<string, string | number>): string => {
     const dict = translations[language];
-    let value = (dict as any)[key] || (translations['en'] as any)[key] || key;
+    let value = (dict as Record<string, string>)[key] || (translations['en'] as Record<string, string>)[key] || key;
 
     if (replacements) {
       Object.entries(replacements).forEach(([k, val]) => {
