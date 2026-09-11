@@ -18,15 +18,20 @@ class WebPushService
         $subject = config('services.webpush.vapid_subject', env('VAPID_SUBJECT', 'mailto:admin@monlam.ai'));
 
         if ($publicKey && $privateKey) {
-            $auth = [
-                'VAPID' => [
-                    'subject' => $subject,
-                    'publicKey' => $publicKey,
-                    'privateKey' => $privateKey,
-                ],
-            ];
-            $this->webPush = new WebPush($auth);
-            $this->webPush->setReuseVAPIDHeaders(true);
+            try {
+                $auth = [
+                    'VAPID' => [
+                        'subject' => trim($subject),
+                        'publicKey' => trim($publicKey),
+                        'privateKey' => trim($privateKey),
+                    ],
+                ];
+                $this->webPush = new WebPush($auth);
+                $this->webPush->setReuseVAPIDHeaders(true);
+            } catch (\Throwable $e) {
+                Log::error('[WebPush] Initialization failed: ' . $e->getMessage());
+                $this->webPush = null;
+            }
         }
     }
 
