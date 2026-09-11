@@ -1,4 +1,4 @@
-import { api } from "@/lib/api";
+import { apiUrl, authHeaders } from "@/lib/api-url";
 
 /**
  * Convert a base64 string to a Uint8Array for PushManager subscription.
@@ -62,8 +62,18 @@ export async function getVapidPublicKey(): Promise<string> {
     return process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   }
 
-  const response = await api.get("/v1/push/vapid-key");
-  return response.data.vapid_public_key;
+  const res = await fetch(apiUrl("/v1/push/vapid-key"), {
+    credentials: "include",
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || err.error || `Failed to fetch VAPID key (${res.status})`);
+  }
+
+  const data = await res.json();
+  return data.vapid_public_key;
 }
 
 /**
@@ -114,24 +124,37 @@ export async function subscribeToPushNotifications(): Promise<{
       });
     }
 
-    // 5. Send subscription to Laravel backend
+    // 5. Send subscription to Laravel backend using standard apiUrl + authHeaders
     const jsonSub = subscription.toJSON();
     const currentLocale =
       typeof window !== "undefined"
         ? localStorage.getItem("mealbuddy_lang") || "bo"
         : "bo";
 
-    await api.post("/v1/push-subscriptions", {
-      endpoint: subscription.endpoint,
-      keys: {
-        p256dh: jsonSub.keys?.p256dh || null,
-        auth: jsonSub.keys?.auth || null,
+    const res = await fetch(apiUrl("/v1/push-subscriptions"), {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
       },
-      locale: currentLocale === "en" ? "en" : "bo",
-      content_encoding:
-        (PushManager as unknown as { supportedContentEncodings?: string[] })
-          ?.supportedContentEncodings?.[0] || "aes128gcm",
+      body: JSON.stringify({
+        endpoint: subscription.endpoint,
+        keys: {
+          p256dh: jsonSub.keys?.p256dh || null,
+          auth: jsonSub.keys?.auth || null,
+        },
+        locale: currentLocale === "en" ? "en" : "bo",
+        content_encoding:
+          (PushManager as unknown as { supportedContentEncodings?: string[] })
+            ?.supportedContentEncodings?.[0] || "aes128gcm",
+      }),
     });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || err.error || `Failed to save push subscription (${res.status})`);
+    }
 
     return { success: true, subscription };
   } catch (err: unknown) {
@@ -159,8 +182,14 @@ export async function unsubscribeFromPushNotifications(): Promise<{
     if (subscription) {
       // Remove from backend first
       try {
-        await api.delete("/v1/push-subscriptions", {
-          data: { endpoint: subscription.endpoint },
+        await fetch(apiUrl("/v1/push-subscriptions"), {
+          method: "DELETE",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            ...authHeaders(),
+          },
+          body: JSON.stringify({ endpoint: subscription.endpoint }),
         });
       } catch (err) {
         console.warn("Failed to remove push subscription on backend:", err);
@@ -192,20 +221,29 @@ export async function triggerTestPushNotification(): Promise<{
         ? localStorage.getItem("mealbuddy_lang") || "bo"
         : "bo";
 
-    const response = await api.post("/v1/push-subscriptions/test", {
-      locale: currentLocale === "en" ? "en" : "bo",
+    const res = await fetch(apiUrl("/v1/push-subscriptions/test"), {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
+      body: JSON.stringify({
+        locale: currentLocale === "en" ? "en" : "bo",
+      }),
     });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.message || data.error || `Failed to send test push (${res.status})`);
+    }
+
     return {
       success: true,
-      message: response.data.message || "Test push notification sent!",
+      message: data.message || "Test push notification sent!",
     };
   } catch (err: unknown) {
-    const errorMsg =
-      (err as { response?: { data?: { error?: string; message?: string } } })?.response?.data
-        ?.error ||
-      (err as { response?: { data?: { error?: string; message?: string } } })?.response?.data
-        ?.message ||
-      (err instanceof Error ? err.message : "Failed to send test push notification.");
+    const errorMsg = err instanceof Error ? err.message : "Failed to send test push notification.";
     return { success: false, error: errorMsg };
   }
 }
