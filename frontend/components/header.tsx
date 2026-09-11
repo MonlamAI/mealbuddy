@@ -399,14 +399,14 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
                             className="
                                 fixed right-0 bottom-0
                                 w-[85vw] max-w-[340px]
-                                bg-white/95 dark:bg-[#1C1C1C]/95 backdrop-blur-xl
+                                bg-white dark:bg-[#1C1C1C]
                                 border-l border-slate-200 dark:border-[#323232]
                                 shadow-2xl
                                 z-[2000]
                                 flex flex-col
                                 p-6
                                 md:hidden
-                                rounded-l-3xl
+                                rounded-l-xl
                             "
                             style={{
                                 top: `${headerHeight}px`,
@@ -419,14 +419,14 @@ export default function Header({ user, onLogout, onNavigateHome }: HeaderProps) 
                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Navigation</span>
                                 <button
                                     onClick={() => { router.push('/'); setIsSidebarOpen(false); }}
-                                    className="text-left text-[#1F2A44] hover:bg-slate-50 transition-colors py-2.5 px-3 rounded-xl text-base font-semibold"
+                                    className="text-left text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#252525] transition-colors py-2.5 px-3 rounded-xl text-base font-semibold cursor-pointer"
                                 >
-                                    Home
+                                    {t('home')}
                                 </button>
                                 {currentUser && (
                                     <button
                                         onClick={() => { router.push('/profile'); setIsSidebarOpen(false); }}
-                                        className="text-left text-[#1F2A44] hover:bg-slate-50 transition-colors py-2.5 px-3 rounded-xl text-base font-semibold"
+                                        className="text-left text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#252525] transition-colors py-2.5 px-3 rounded-xl text-base font-semibold cursor-pointer"
                                     >
                                         {t('profile_settings')}
                                     </button>

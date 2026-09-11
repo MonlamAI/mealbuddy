@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'MealBuddy | Office Lunch Management',
-    short_name: 'MealBuddy | Office Lunch Management',
+    name: 'Mealbuddy',
+    short_name: 'Mealbuddy',
     description: 'Office cafeteria lunch management, daily meal voting, and billing',
     start_url: '/',
     scope: '/',
